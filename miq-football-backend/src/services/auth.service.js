@@ -11,13 +11,13 @@ const signToken = (id) => {
 export const sendTokenResponse = (user, statusCode, res, message) => {
     const token = signToken(user._id);
 
+    const cookieDays = parseInt(process.env.JWT_COOKIE_EXPIRES_IN, 10) || 7;
+    const isProd = process.env.NODE_ENV === 'production';
     const cookieOptions = {
-        expires: new Date(
-            Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-        ),
+        maxAge: cookieDays * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
     };
 
     user.password = undefined;
