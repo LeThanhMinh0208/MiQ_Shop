@@ -2,10 +2,14 @@ import mongoose from 'mongoose';
 import slugify from 'slugify';
 
 const reviewSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    name: String,
-    rating: { type: Number, min: 1, max: 5, required: true },
-    comment: { type: String, required: true },
+    user:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    name:    { type: String, required: true },
+    avatar:  { type: String, default: '' },
+    rating:  { type: Number, min: 1, max: 5, required: true },
+    comment: { type: String, required: true, trim: true, maxlength: 1000 },
+    images:  [{ url: String, publicId: String }],
+    verifiedPurchase: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 const productSchema = new mongoose.Schema({
@@ -25,6 +29,16 @@ const productSchema = new mongoose.Schema({
     reviews: [reviewSchema],
     isFeatured: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    accentColor: {
+        hex: { type: String, default: '#10B981' },
+        rgb: { type: String, default: '16, 185, 129' },
+    },
+    flashSale: {
+        active:     { type: Boolean, default: false },
+        endAt:      { type: Date,    default: null },
+        soldCount:  { type: Number,  default: 0 },
+        totalLimit: { type: Number,  default: 100 },
+    },
 }, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
 
 productSchema.index({ name: 'text', description: 'text', tags: 'text' });

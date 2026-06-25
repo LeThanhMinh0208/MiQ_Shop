@@ -1,17 +1,19 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useLanguageStore } from '../../store/languageStore.js';
 
 const FeaturedCategories = () => {
+  const t = useLanguageStore((s) => s.t);
   return (
-    <section className="py-16 bg-cream">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="py-16 bg-bg-elevated">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="font-display text-4xl md:text-5xl font-bold mb-10"
+          className="font-display text-4xl md:text-5xl xl:text-6xl font-bold text-text-primary mb-10"
         >
-          Featured Categories
+          {t('featuredCategories')}
         </motion.h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-auto md:h-[600px]">
@@ -21,20 +23,20 @@ const FeaturedCategories = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
-            className="md:row-span-2 bg-gradient-to-br from-emerald-200 to-emerald-100 rounded-3xl p-8 relative overflow-hidden border border-primary/20 shadow-pedestal cursor-pointer flex flex-col justify-between"
+            className="md:row-span-2 bg-gradient-to-br from-primary/20 to-primary/10 rounded-3xl p-8 relative overflow-hidden border border-primary/30 shadow-pedestal cursor-pointer flex flex-col justify-between"
           >
             <div className="relative z-10">
-              <h3 className="font-display text-3xl md:text-4xl font-bold mb-3">CLUB KITS</h3>
-              <p className="text-sm text-ink-light max-w-[200px]">
-                Tận hưởng áo đấu chính hãng, mặc một đam mê.
+              <h3 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">{t('kits').toUpperCase()}</h3>
+              <p className="text-sm text-text-secondary max-w-[200px]">
+                {t('shopCollection')}
               </p>
             </div>
             <div className="relative z-10 flex items-end justify-between">
               <Link
                 to="/products?category=kits"
-                className="bg-white text-ink font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md"
+                className="bg-surface text-text-primary font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md border border-surface-border"
               >
-                Explore →
+                {t('exploreAll')} →
               </Link>
             </div>
 
@@ -55,16 +57,16 @@ const FeaturedCategories = () => {
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
             transition={{ delay: 0.1 }}
-            className="md:col-span-2 bg-gradient-to-br from-emerald-50 to-cream rounded-3xl p-6 relative overflow-hidden border border-primary/20 shadow-pedestal cursor-pointer min-h-[290px]"
+            className="md:col-span-2 bg-gradient-to-br from-bg-raised to-bg-elevated rounded-3xl p-6 relative overflow-hidden border border-surface-border hover-border-flash shadow-pedestal cursor-pointer min-h-[290px] transition-colors duration-300"
           >
             <div className="relative z-10 max-w-[55%]">
-              <h3 className="font-display text-3xl md:text-4xl font-bold mb-3">FOOTBALL BOOTS</h3>
-              <p className="text-sm text-ink-light mb-4">Giày đỉnh cao mới ra mắt</p>
+              <h3 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">{t('boots').toUpperCase()}</h3>
+              <p className="text-sm text-text-secondary mb-4">{t('newArrivalsTitle')}</p>
               <Link
                 to="/products?category=boots"
-                className="inline-block bg-white text-ink font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md"
+                className="inline-block bg-surface text-text-primary font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md border border-surface-border"
               >
-                Explore →
+                {t('viewMore')} →
               </Link>
             </div>
 
@@ -82,16 +84,16 @@ const FeaturedCategories = () => {
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
             transition={{ delay: 0.15 }}
-            className="md:col-span-2 bg-gradient-to-br from-cream to-emerald-50 rounded-3xl p-6 relative overflow-hidden border border-primary/20 shadow-pedestal cursor-pointer min-h-[290px]"
+            className="md:col-span-2 bg-gradient-to-br from-bg-elevated to-bg-raised rounded-3xl p-6 relative overflow-hidden border border-surface-border hover-border-flash shadow-pedestal cursor-pointer min-h-[290px] transition-colors duration-300"
           >
             <div className="relative z-10 max-w-[55%]">
-              <h3 className="font-display text-3xl md:text-4xl font-bold mb-3">SPORTS APPAREL</h3>
-              <p className="text-sm text-ink-light mb-4">Trang phục tập luyện chuyên nghiệp</p>
+              <h3 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">{t('apparel').toUpperCase()}</h3>
+              <p className="text-sm text-text-secondary mb-4">{t('shopCollection')}</p>
               <Link
                 to="/products?category=apparel"
-                className="inline-block bg-white text-ink font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md"
+                className="inline-block bg-surface text-text-primary font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md border border-surface-border"
               >
-                Explore →
+                {t('viewMore')} →
               </Link>
             </div>
 
@@ -109,15 +111,15 @@ const FeaturedCategories = () => {
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
             transition={{ delay: 0.2 }}
-            className="md:col-span-3 bg-gradient-to-r from-emerald-100 via-emerald-50 to-emerald-100 rounded-3xl p-6 relative overflow-hidden border border-primary/20 shadow-pedestal cursor-pointer min-h-[200px] flex items-center"
+            className="md:col-span-3 bg-gradient-to-r from-bg-raised via-bg-elevated to-bg-raised rounded-3xl p-6 relative overflow-hidden border border-surface-border hover-border-flash shadow-pedestal cursor-pointer min-h-[200px] flex items-center transition-colors duration-300"
           >
             <div className="relative z-10">
-              <h3 className="font-display text-3xl md:text-4xl font-bold mb-3">ACCESSORIES</h3>
+              <h3 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">{t('accessories').toUpperCase()}</h3>
               <Link
                 to="/products?category=accessories"
-                className="inline-block bg-white text-ink font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md"
+                className="inline-block bg-surface text-text-primary font-semibold uppercase text-xs tracking-wider px-5 py-2 rounded-full hover:bg-primary hover:text-white transition shadow-md border border-surface-border"
               >
-                Explore →
+                {t('viewMore')} →
               </Link>
             </div>
 

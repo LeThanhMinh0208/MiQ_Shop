@@ -1,0 +1,183 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ── Backend: lint + unit + integration tests ───────────────────────────────
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: miq-football-backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: miq-football-backend
+
+      - name: npm audit (fail on high/critical)
+        run: npm audit --audit-level=high --omit=dev
+        working-directory: miq-football-backend
+        continue-on-error: false
+
+      - name: Run backend tests (unit + integration)
+        run: npm test
+        working-directory: miq-football-backend
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret-not-used-in-prod' }}
+          JWT_EXPIRES_IN: 7d
+          JWT_COOKIE_EXPIRES_IN: '7'
+          STRIPE_SECRET_KEY: sk_test_ci_placeholder
+          CLIENT_URL: http://localhost:5173
+
+  # ── Frontend: lint + build ─────────────────────────────────────────────────
+  frontend-build:
+    name: Frontend lint + build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: miq-football-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: miq-football-frontend
+
+      - name: npm audit (fail on high/critical)
+        run: npm audit --audit-level=high --omit=dev
+        working-directory: miq-football-frontend
+        continue-on-error: false
+
+      - name: vnAddress smoke test (63 provinces, no crash)
+        run: node src/data/__tests__/vnAddress.test.mjs
+        working-directory: miq-football-frontend
+
+      - name: Lint
+        run: npm run lint
+        working-directory: miq-football-frontend
+
+      - name: Build
+        run: npm run build
+        working-directory: miq-football-frontend
+        env:
+          VITE_API_URL: http://localhost:5000/api/v1
+          VITE_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+          VITE_CLOUDINARY_CLOUD_NAME: placeholder
+          VITE_CLOUDINARY_PRESET: placeholder
+
+  # ── E2E: Playwright checkout tests ────────────────────────────────────────
+  e2e:
+    name: E2E tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend-build]
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            miq-football-backend/package-lock.json
+            miq-football-frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: miq-football-backend
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: miq-football-frontend
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: miq-football-frontend
+
+      - name: Seed test data
+        run: node src/utils/seedData.js
+        working-directory: miq-football-backend
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://localhost:27017/miq_e2e
+          JWT_SECRET: e2e-ci-secret
+          JWT_EXPIRES_IN: 7d
+          JWT_COOKIE_EXPIRES_IN: '7'
+          STRIPE_SECRET_KEY: sk_test_placeholder
+        continue-on-error: true  # seed may fail if already seeded; not fatal
+
+      - name: Start backend
+        run: node server.js &
+        working-directory: miq-football-backend
+        env:
+          NODE_ENV: test
+          PORT: 5000
+          MONGO_URI: mongodb://localhost:27017/miq_e2e
+          JWT_SECRET: e2e-ci-secret
+          JWT_EXPIRES_IN: 7d
+          JWT_COOKIE_EXPIRES_IN: '7'
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST || 'sk_test_placeholder' }}
+          CLIENT_URL: http://localhost:5173
+
+      - name: Wait for backend
+        run: |
+          for i in {1..15}; do
+            curl -sf http://localhost:5000/health && echo "Backend up" && exit 0
+            sleep 2
+          done
+          echo "Backend did not start" && exit 1
+
+      - name: Start frontend dev server
+        run: npm run dev -- --port 5173 &
+        working-directory: miq-football-frontend
+        env:
+          VITE_API_URL: http://localhost:5000/api/v1
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY_TEST || 'pk_test_placeholder' }}
+          VITE_CLOUDINARY_CLOUD_NAME: placeholder
+          VITE_CLOUDINARY_PRESET: placeholder
+
+      - name: Run Playwright tests
+        run: npx playwright test
+        working-directory: miq-football-frontend
+        env:
+          SKIP_WEB_SERVER: '1'
+          CI: '1'
+          # Stripe Checkout tests are skipped unless a real test key is present
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: miq-football-frontend/playwright-report/
+          retention-days: 14

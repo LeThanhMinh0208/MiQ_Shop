@@ -36,7 +36,7 @@ const AdminProtected = ({ children }) => {
       <div className="min-h-[60vh] flex items-center justify-center px-6">
         <div className="text-center">
           <h2 className="font-display text-3xl font-bold mb-2">403 - Không có quyền</h2>
-          <p className="text-ink-muted">Chỉ Admin mới truy cập được trang này</p>
+          <p className="text-text-muted">Chỉ Admin mới truy cập được trang này</p>
         </div>
       </div>
     );

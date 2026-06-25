@@ -1,0 +1,29 @@
+<svg viewBox="0 0 200 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MiQ Elite Football">
+  <defs>
+    <linearGradient id="mq-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#065F46"/>
+      <stop offset="50%"  stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+    <filter id="dot-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- M -->
+  <text x="2" y="52" font-family="Oswald, sans-serif" font-weight="700" font-size="54" fill="#1F2937" letter-spacing="-1">M</text>
+
+  <!-- i vertical bar -->
+  <rect x="58" y="22" width="7" height="30" rx="2.5" fill="#1F2937"/>
+
+  <!-- i dot — glowing emerald -->
+  <circle cx="61.5" cy="11" r="6.5" fill="#10B981" filter="url(#dot-glow)"/>
+  <circle cx="61.5" cy="11" r="9.5" fill="rgba(16,185,129,0.2)"/>
+
+  <!-- Q -->
+  <text x="70" y="52" font-family="Oswald, sans-serif" font-weight="700" font-size="54" fill="#1F2937" letter-spacing="-1">Q</text>
+
+  <!-- Tagline -->
+  <text x="2" y="64" font-family="Inter, sans-serif" font-weight="600" font-size="11" fill="#6B7280" letter-spacing="5">ELITE FOOTBALL</text>
+</svg>

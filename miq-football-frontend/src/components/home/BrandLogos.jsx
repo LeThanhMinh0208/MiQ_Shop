@@ -1,52 +1,76 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
-const BrandLogos = () => {
-  const brands = [
-    { name: 'New Balance', style: 'italic' },
-    { name: 'NIKE', style: 'normal' },
-    { name: 'adidas', style: 'lowercase' },
-    { name: 'PUMA', style: 'normal' },
-    { name: 'Mizuno', style: 'normal' },
-    { name: 'adidas', style: 'lowercase' },
-    { name: 'Mizuno', style: 'normal' },
-    { name: 'UNDER ARMOUR', style: 'normal' },
-    { name: 'New Balance', style: 'italic' },
-    { name: 'NIKE', style: 'normal' },
-  ];
+// ── Brand data ─────────────────────────────────────────────────────────────
+// Two rows with different ordering for visual variety
+const ROW_A = [
+  { name: 'NIKE',         slug: 'Nike',          cls: 'font-display font-black italic tracking-[-0.04em] text-2xl md:text-3xl' },
+  { name: 'adidas',       slug: 'Adidas',        cls: 'font-display font-black tracking-[-0.02em] text-2xl md:text-3xl lowercase' },
+  { name: 'PUMA',         slug: 'Puma',          cls: 'font-display font-black italic tracking-widest text-xl md:text-2xl' },
+  { name: 'Mizuno',       slug: 'Mizuno',        cls: 'font-display font-bold text-xl md:text-2xl' },
+  { name: 'New Balance',  slug: 'New Balance',   cls: 'font-body font-black text-xs md:text-sm tracking-[0.18em] uppercase' },
+  { name: 'UNDER ARMOUR', slug: 'Under Armour',  cls: 'font-display font-bold tracking-wider text-base md:text-lg' },
+];
+const ROW_B = [
+  { name: 'UNDER ARMOUR', slug: 'Under Armour',  cls: 'font-display font-bold tracking-wider text-base md:text-lg' },
+  { name: 'New Balance',  slug: 'New Balance',   cls: 'font-body font-black text-xs md:text-sm tracking-[0.18em] uppercase' },
+  { name: 'PUMA',         slug: 'Puma',          cls: 'font-display font-black italic tracking-widest text-xl md:text-2xl' },
+  { name: 'Mizuno',       slug: 'Mizuno',        cls: 'font-display font-bold text-xl md:text-2xl' },
+  { name: 'NIKE',         slug: 'Nike',          cls: 'font-display font-black italic tracking-[-0.04em] text-2xl md:text-3xl' },
+  { name: 'adidas',       slug: 'Adidas',        cls: 'font-display font-black tracking-[-0.02em] text-2xl md:text-3xl lowercase' },
+];
+
+// ── Separator dot ──────────────────────────────────────────────────────────
+const Dot = () => (
+  <span className="w-1.5 h-1.5 rounded-full bg-white/20 flex-shrink-0 inline-block" aria-hidden="true" />
+);
+
+// ── Marquee row ────────────────────────────────────────────────────────────
+// Quadruples the list so the seamless -50% loop always has content
+const MarqueeRow = ({ brands, reverse = false }) => {
+  const items = [...brands, ...brands, ...brands, ...brands];
+  const animClass = reverse ? 'animate-marquee-r' : 'animate-marquee-l';
 
   return (
-    <section className="relative py-10 bg-gradient-to-b from-emerald-50 to-cream overflow-hidden border-y border-primary/10">
-      {/* Curved ribbon effect */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <svg className="w-full h-full opacity-30" viewBox="0 0 1200 100" preserveAspectRatio="none">
-          <path
-            d="M 0 50 Q 300 10 600 50 T 1200 50"
-            stroke="rgba(16, 185, 129, 0.3)"
-            strokeWidth="2"
-            fill="none"
-          />
-        </svg>
-      </div>
-
-      {/* Marquee scroll */}
-      <motion.div
-        className="flex gap-12 items-center whitespace-nowrap"
-        animate={{ x: [0, -1200] }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+    <div className="overflow-hidden">
+      <div
+        className={`flex items-center gap-10 w-max ${animClass} group-hover/strip:[animation-play-state:paused]`}
       >
-        {[...brands, ...brands].map((brand, i) => (
-          <div
-            key={i}
-            className={`font-display text-2xl md:text-3xl font-bold text-ink-muted hover:text-primary transition shrink-0 ${
-              brand.style === 'italic' ? 'italic' : ''
-            } ${brand.style === 'lowercase' ? 'lowercase' : ''}`}
-          >
-            {brand.name}
-          </div>
+        {items.map((brand, i) => (
+          <span key={i} className="inline-flex items-center gap-10 flex-shrink-0">
+            <Link
+              to={`/products?brand=${encodeURIComponent(brand.slug)}`}
+              className={`${brand.cls} text-white/25 hover:text-white/75 hover:scale-105 transition-all duration-200 whitespace-nowrap`}
+            >
+              {brand.name}
+            </Link>
+            <Dot />
+          </span>
         ))}
-      </motion.div>
-    </section>
+      </div>
+    </div>
   );
 };
+
+// ── Section ────────────────────────────────────────────────────────────────
+const BrandLogos = ({ className = '' }) => (
+  <section className={`group/strip overflow-hidden ${className || 'py-8 bg-gray-950 border-y border-white/[0.06]'}`}>
+    {/* Title */}
+    <motion.p
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
+      className="text-center font-display text-[10px] font-bold tracking-[0.35em] uppercase text-white/30 mb-6"
+    >
+      Đối tác thương hiệu chính hãng
+    </motion.p>
+
+    <div className="space-y-5">
+      <MarqueeRow brands={ROW_A} />
+      <MarqueeRow brands={ROW_B} reverse />
+    </div>
+  </section>
+);
 
 export default BrandLogos;

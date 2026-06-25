@@ -8,6 +8,8 @@ const categorySchema = new mongoose.Schema({
     image: { url: { type: String, default: '' }, publicId: { type: String, default: '' } },
     parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null },
     isActive: { type: Boolean, default: true },
+    icon: { type: String, default: 'Package' },
+    displayOrder: { type: Number, default: 99 },
 }, { timestamps: true });
 
 categorySchema.pre('save', function() {

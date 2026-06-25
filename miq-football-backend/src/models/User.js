@@ -21,12 +21,25 @@ const userSchema = new mongoose.Schema({
         district: String,
         city: String,
         isDefault: { type: Boolean, default: false },
-    }, ],
+    }],
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    // Tokens issued before this timestamp are invalid — set on every password change
+    passwordChangedAt: { type: Date, select: true },
+    // Hashed reset token + TTL — only populated during an active reset flow
+    passwordResetToken:   { type: String, select: false },
+    passwordResetExpires: { type: Date,   select: false },
 }, { timestamps: true });
 
 userSchema.pre('save', async function() {
     if (!this.isModified('password')) return;
     this.password = await bcrypt.hash(this.password, 12);
+    // Record change time so older tokens are rejected by the protect middleware.
+    // Skip on first save (registration) — no tokens exist yet.
+    if (!this.isNew) {
+        // Subtract 1 s so the timestamp never lands in the same JWT-second as a
+        // freshly issued token, which would prevent the new token from working.
+        this.passwordChangedAt = new Date(Date.now() - 1000);
+    }
 });
 
 userSchema.methods.comparePassword = async function(candidatePassword) {

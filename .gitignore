@@ -26,3 +26,8 @@ Thumbs.db
 
 # Lock files
 **/package-lock.json
+.vercel
+# CLI tools & test artifacts
+stripe-cli/
+**/test-results/
+.claude/

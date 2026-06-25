@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 const ProductCustomizer = ({ name, number, onChange }) => {
   return (
-    <div className="bg-cream rounded-2xl p-5 border border-primary/20">
+    <div className="bg-bg-raised rounded-2xl p-5 border border-primary/20">
       <h4 className="font-display text-sm font-bold uppercase mb-3 text-primary">
         Cá nhân hóa
       </h4>
@@ -10,24 +10,24 @@ const ProductCustomizer = ({ name, number, onChange }) => {
       <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
         <div className="space-y-2">
           <div>
-            <label className="text-xs font-semibold text-ink-muted uppercase">Tên</label>
+            <label className="text-xs font-semibold text-text-muted uppercase">Tên</label>
             <input
               type="text"
               value={name}
               onChange={(e) => onChange({ name: e.target.value.toUpperCase().slice(0, 12), number })}
               placeholder="MIQ PRO"
-              className="w-full mt-1 px-3 py-2 rounded-lg border border-cream-200 focus:border-primary focus:outline-none text-sm uppercase"
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-surface-border focus:border-primary focus:outline-none text-sm uppercase"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-ink-muted uppercase">Số</label>
+            <label className="text-xs font-semibold text-text-muted uppercase">Số</label>
             <input
               type="number"
               value={number}
               onChange={(e) => onChange({ name, number: e.target.value.slice(0, 2) })}
               placeholder="7"
               max="99"
-              className="w-full mt-1 px-3 py-2 rounded-lg border border-cream-200 focus:border-primary focus:outline-none text-sm"
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-surface-border focus:border-primary focus:outline-none text-sm"
             />
           </div>
         </div>

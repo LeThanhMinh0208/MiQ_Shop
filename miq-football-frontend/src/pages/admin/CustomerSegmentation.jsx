@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Star, Sparkles, AlertTriangle, Snowflake, Loader } from 'lucide-react';
+import { Crown, Star, Sparkles, AlertTriangle, Snowflake } from 'lucide-react';
 import { adminGetSegmentation } from '../../services/adminService.js';
 import { formatCurrency } from '../../utils/formatCurrency.js';
 
@@ -31,13 +31,21 @@ const CustomerSegmentation = () => {
     }
   };
 
-  if (loading) return <Loader className="w-10 h-10 text-primary animate-spin mx-auto mt-20" />;
+  if (loading) return (
+    <div className="space-y-6">
+      <div className="h-8 bg-bg-raised rounded-full w-64 animate-pulse" />
+      <div className="grid grid-cols-5 gap-4">
+        {[0,1,2,3,4].map(i => <div key={i} className="h-28 bg-bg-raised rounded-2xl animate-pulse" />)}
+      </div>
+      <div className="bg-bg-elevated rounded-2xl h-64 animate-pulse" />
+    </div>
+  );
   if (!data) return null;
 
   return (
     <div>
       <h1 className="font-display text-3xl font-bold mb-2">Phân cụm khách hàng</h1>
-      <p className="text-ink-muted mb-6">
+      <p className="text-text-muted mb-6">
         Thuật toán K-Means dựa trên RFM (Recency - Frequency - Monetary) | Tổng: {data.total} khách hàng
       </p>
 
@@ -58,9 +66,9 @@ const CustomerSegmentation = () => {
       </div>
 
       {/* Customer Table */}
-      <div className="bg-white rounded-2xl border border-cream-200 overflow-hidden">
+      <div className="bg-bg-elevated rounded-2xl border border-surface-border overflow-hidden">
         <table className="w-full">
-          <thead className="bg-cream">
+          <thead className="bg-bg-raised">
             <tr>
               <th className="text-left p-3 text-sm uppercase font-bold">Khách hàng</th>
               <th className="text-left p-3 text-sm uppercase font-bold">Recency</th>
@@ -73,10 +81,10 @@ const CustomerSegmentation = () => {
             {data.data.map((u, i) => {
               const config = SEGMENT_CONFIG[u.segment];
               return (
-                <tr key={u.userId} className="border-t border-cream-200 hover:bg-cream/50">
+                <tr key={u.userId} className="border-t border-surface-border hover:bg-bg-raised/50">
                   <td className="p-3">
-                    <p className="font-semibold">{u.name}</p>
-                    <p className="text-xs text-ink-muted">{u.email}</p>
+                    <p className="font-semibold text-text-primary">{u.name}</p>
+                    <p className="text-xs text-text-muted">{u.email}</p>
                   </td>
                   <td className="p-3 text-sm">{u.recency} ngày</td>
                   <td className="p-3 text-sm">{u.frequency} đơn</td>
