@@ -46,7 +46,7 @@ export const csrfMiddleware = (req, res, next) => {
     if (SAFE_METHODS.has(req.method)) return next();
 
     // Bearer-token callers — not browser-cookie-based, so CSRF-immune
-    if (req.headers.authorization ? .startsWith('Bearer ')) return next();
+    if (req.headers.authorization?.startsWith('Bearer ')) return next();
 
     // Auth bootstrap routes — no victim session exists to exploit
     if (CSRF_EXEMPT_PATHS.has(req.path)) return next();
