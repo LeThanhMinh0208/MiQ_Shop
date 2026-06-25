@@ -33,10 +33,11 @@ export const csrfMiddleware = (req, res, next) => {
     // then supply the matching header without needing a prior GET.
     if (!req.cookies[CSRF_COOKIE]) {
         const token = crypto.randomBytes(32).toString('hex');
+        const isProd = process.env.NODE_ENV === 'production';
         res.cookie(CSRF_COOKIE, token, {
-            httpOnly: false,  // must be readable by the SPA's JS
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            httpOnly: false, // must be readable by the SPA's JS
+            secure: isProd,
+            sameSite: isProd ? 'none' : 'strict',
             maxAge: COOKIE_MAX_AGE,
         });
     }
@@ -45,7 +46,7 @@ export const csrfMiddleware = (req, res, next) => {
     if (SAFE_METHODS.has(req.method)) return next();
 
     // Bearer-token callers — not browser-cookie-based, so CSRF-immune
-    if (req.headers.authorization?.startsWith('Bearer ')) return next();
+    if (req.headers.authorization ? .startsWith('Bearer ')) return next();
 
     // Auth bootstrap routes — no victim session exists to exploit
     if (CSRF_EXEMPT_PATHS.has(req.path)) return next();
