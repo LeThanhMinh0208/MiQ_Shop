@@ -13,6 +13,7 @@ import adminOrdersRoutes from './adminOrders.routes.js';
 import notificationRoutes from './notification.routes.js';
 import chatRoutes from './chat.routes.js';
 import addressRoutes from './address.routes.js';
+import collectionRoutes from './collection.routes.js';
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use('/admin/stats', adminStatsRoutes);
 router.use('/admin/orders', adminOrdersRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/chat', chatRoutes);
+router.use('/collections', collectionRoutes);
 
 export default router;

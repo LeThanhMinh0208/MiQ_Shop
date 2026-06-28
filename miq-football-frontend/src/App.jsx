@@ -26,6 +26,7 @@ import JerseyPrintPage from './pages/JerseyPrintPage.jsx';
 import ProductCompare from './pages/ProductCompare.jsx';
 import Wishlist from './pages/Wishlist.jsx';
 import BrandPage from './pages/BrandPage.jsx';
+import CollectionPage from './pages/CollectionPage.jsx';
 import Terms from './pages/Terms.jsx';
 import Privacy from './pages/Privacy.jsx';
 import CompareBar from './components/product/CompareBar.jsx';
@@ -41,6 +42,7 @@ const HeroManagement        = lazy(() => import('./pages/admin/HeroManagement.js
 const NewsManagement        = lazy(() => import('./pages/admin/NewsManagement.jsx'));
 const ChannelManagement     = lazy(() => import('./pages/admin/ChannelManagement.jsx'));
 const AdminChat             = lazy(() => import('./pages/admin/AdminChat.jsx'));
+const CollectionManagement  = lazy(() => import('./pages/admin/CollectionManagement.jsx'));
 import ChatWidget from './components/ui/ChatWidget.jsx';
 import { useAuthStore } from './store/authStore.js';
 import { useThemeStore } from './store/themeStore.js';
@@ -100,6 +102,7 @@ function AppContent() {
             <Route path="news" element={<Suspense fallback={<AdminLoadingFallback />}><NewsManagement /></Suspense>} />
             <Route path="channel" element={<Suspense fallback={<AdminLoadingFallback />}><ChannelManagement /></Suspense>} />
             <Route path="chat" element={<Suspense fallback={<AdminLoadingFallback />}><AdminChat /></Suspense>} />
+            <Route path="collections" element={<Suspense fallback={<AdminLoadingFallback />}><CollectionManagement /></Suspense>} />
           </Route>
         </Routes>
       ) : (
@@ -121,6 +124,7 @@ function AppContent() {
             <Route path="/compare" element={<ProductCompare />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/brands/:slug" element={<BrandPage />} />
+            <Route path="/collections/:slug" element={<CollectionPage />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
           </Routes>

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tag,
   LogOut, ChevronLeft, ChevronRight, MessageCircle,
-  Newspaper, PlayCircle, ImagePlay, Layers, Home,
+  Newspaper, PlayCircle, ImagePlay, Layers, Home, Layers3,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore.js';
 import { useThemeStore } from '../../store/themeStore.js';
@@ -20,6 +20,7 @@ const links = [
   { to: '/admin/news',         icon: Newspaper,       label: 'Tin tức' },
   { to: '/admin/channel',      icon: PlayCircle,      label: 'MiQ Channel' },
   { to: '/admin/segmentation', icon: Users,           label: 'Khách hàng' },
+  { to: '/admin/collections',  icon: Layers3,         label: 'Bộ sưu tập' },
   { to: '/admin/site-assets',  icon: Layers,          label: 'Hình ảnh' },
   { to: '/admin/chat',         icon: MessageCircle,   label: 'Chat' },
 ];

@@ -17,13 +17,13 @@ import useFocusTrap from '../../hooks/useFocusTrap.js';
 
 // ─── Static nav data ────────────────────────────────────────────────────────
 const BRANDS = [
-  { label: 'MiQ Brand', path: '/brands/miq', special: true },
-  { label: 'Nike',       path: '/brands/nike' },
-  { label: 'Adidas',     path: '/brands/adidas' },
-  { label: 'Puma',       path: '/brands/puma' },
-  { label: 'New Balance',path: '/brands/new-balance' },
-  { label: 'Mizuno',     path: '/brands/mizuno' },
-  { label: 'Umbro',      path: '/brands/umbro' },
+  { label: 'MiQ Brand', path: '/collections/miq', special: true },
+  { label: 'Nike',       path: '/collections/nike' },
+  { label: 'Adidas',     path: '/collections/adidas' },
+  { label: 'Puma',       path: '/collections/puma' },
+  { label: 'New Balance',path: '/collections/new-balance' },
+  { label: 'Mizuno',     path: '/collections/mizuno' },
+  { label: 'Umbro',      path: '/collections/umbro' },
 ];
 
 const NAV_CONFIG = [
@@ -148,7 +148,7 @@ const Navbar = () => {
   const { dark, toggle: toggleTheme } = useThemeStore();
 
   const getNavActive = (item) => {
-    if (item.isBrands) return location.pathname.startsWith('/brands');
+    if (item.isBrands) return location.pathname.startsWith('/brands') || location.pathname.startsWith('/collections');
     const cat = searchParams.get('category');
     return location.pathname === '/products' && cat === item.key;
   };
