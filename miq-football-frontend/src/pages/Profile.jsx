@@ -362,7 +362,7 @@ const TabAddresses = ({ user, onUserUpdate }) => {
   const [deleteAddrTarget, setDeleteAddrTarget] = useState(null);
   const t = useLanguageStore((s) => s.t);
 
-  const sync = (updated) => { setAddresses(updated.addresses || []); onUserUpdate(updated); };
+  const sync = (updatedAddresses) => { setAddresses(updatedAddresses); onUserUpdate({ ...user, addresses: updatedAddresses }); };
 
   const openAdd  = () => { setForm(EMPTY_ADDRESS); setEditId(null); setShowForm(true); };
   const openEdit = (addr) => { setForm({ label: addr.label, fullName: addr.fullName, phone: addr.phone, city: addr.city, district: addr.district, ward: addr.ward, street: addr.street, isDefault: addr.isDefault }); setEditId(addr._id); setShowForm(true); };

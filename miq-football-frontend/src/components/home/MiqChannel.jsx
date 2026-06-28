@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Play } from 'lucide-react';
 
 const YoutubeIcon = ({ className = 'w-4 h-4' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -15,30 +17,66 @@ const VIDEOS = [
   { id: 'CevxZvSJLk8', title: 'Hướng Dẫn Chọn Giày Đá Bóng Phù Hợp | MiQ Sport', views: '9.8K lượt xem' },
 ];
 
-const VideoCard = ({ video, index }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 24 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.08, duration: 0.4 }}
-    className="group rounded-2xl overflow-hidden bg-surface border border-surface-border hover:border-red-500/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300"
-  >
-    <div className="relative aspect-video bg-bg-raised overflow-hidden">
-      <iframe
-        src={`https://www.youtube.com/embed/${video.id}?rel=0&modestbranding=1`}
-        title={video.title}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        loading="lazy"
-        className="absolute inset-0 w-full h-full"
-      />
-    </div>
-    <div className="p-3.5">
-      <h4 className="font-bold text-sm text-text-primary line-clamp-2 group-hover:text-primary transition mb-1">{video.title}</h4>
-      <p className="text-xs text-text-muted">{video.views}</p>
-    </div>
-  </motion.div>
-);
+// Facade: show a static YouTube thumbnail and only inject the heavy iframe
+// when the user explicitly clicks Play. Each YouTube embed loads ~500 KB of
+// player JS plus ~15 sub-requests; loading all 6 simultaneously on scroll
+// was the source of the network avalanche in MiqChannel.
+const VideoCard = ({ video, index }) => {
+  const [active, setActive] = useState(false);
+  // YouTube provides several thumbnail resolutions:
+  //   mqdefault  = 320×180  (~10 KB)
+  //   hqdefault  = 480×360  (~20 KB)
+  //   maxresdefault = 1280×720 (may 404 for older videos; use hqdefault as safe fallback)
+  const thumb = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.08, duration: 0.4 }}
+      className="group rounded-2xl overflow-hidden bg-surface border border-surface-border hover:border-red-500/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300"
+    >
+      <div className="relative aspect-video bg-bg-raised overflow-hidden">
+        {active ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${video.id}?rel=0&modestbranding=1&autoplay=1`}
+            title={video.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        ) : (
+          <button
+            onClick={() => setActive(true)}
+            aria-label={`Phát video: ${video.title}`}
+            className="absolute inset-0 w-full h-full group/play"
+          >
+            <img
+              src={thumb}
+              alt={video.title}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/play:scale-105"
+            />
+            {/* Dark overlay */}
+            <span className="absolute inset-0 bg-black/30 group-hover/play:bg-black/20 transition-colors" />
+            {/* Play button */}
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="w-14 h-14 rounded-full bg-red-600/90 group-hover/play:bg-red-500 flex items-center justify-center shadow-lg transition-all duration-200 group-hover/play:scale-110">
+                <Play className="w-6 h-6 text-white fill-white ml-1" />
+              </span>
+            </span>
+          </button>
+        )}
+      </div>
+      <div className="p-3.5">
+        <h4 className="font-bold text-sm text-text-primary line-clamp-2 group-hover:text-primary transition mb-1">{video.title}</h4>
+        <p className="text-xs text-text-muted">{video.views}</p>
+      </div>
+    </motion.div>
+  );
+};
 
 const MiqChannel = () => (
   <section className="py-10 lg:py-12 bg-bg-elevated">

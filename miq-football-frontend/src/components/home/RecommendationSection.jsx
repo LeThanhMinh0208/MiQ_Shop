@@ -9,6 +9,7 @@ import { ProductGridSkeleton } from '../ui/Skeleton.jsx';
 import { useCartStore } from '../../store/cartStore.js';
 import toast from 'react-hot-toast';
 import { useLanguageStore } from '../../store/languageStore.js';
+import { optimizeImg } from '../../utils/cloudinary.js';
 
 // ── Hover type 4: 3D perspective tilt card ────────────────────────────────────
 const RecoCard = ({ product, i, addItem }) => {
@@ -64,7 +65,7 @@ const RecoCard = ({ product, i, addItem }) => {
             </span>
           )}
           <img
-            src={product.images?.[0]?.url}
+            src={optimizeImg(product.images?.[0]?.url)}
             alt={product.name}
             loading="lazy"
             decoding="async"

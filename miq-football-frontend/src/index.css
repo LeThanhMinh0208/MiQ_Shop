@@ -157,6 +157,16 @@ section, .section-contain {
   0%, 100% { transform: translateY(0)     scaleX(1); }
   50%       { transform: translateY(-20px) scaleX(1.012); }
 }
+/* Hero shoe float — matches the former Framer Motion y:[0,-22,0] rotate:[-1.5,1.5,-1.5] */
+@keyframes shoe-levitate {
+  0%, 100% { transform: translateY(0)     rotate(-1.5deg); }
+  50%       { transform: translateY(-22px) rotate(1.5deg); }
+}
+/* Scroll indicator dot bounce — replaces JS motion.rect infinite */
+@keyframes scroll-dot {
+  0%, 100% { transform: translateY(0);  }
+  50%       { transform: translateY(9px); }
+}
 /* ── 8 Hover Effect Varieties ───────────────────────────────────────────── */
 /* 2 — Shimmer: light sweeps across surface on hover */
 @keyframes shimmer-sweep {
@@ -457,7 +467,7 @@ section, .section-contain {
 
   /* ── Scrollbar ───────────────────────────────────────────── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #0A0A0B; }
+  ::-webkit-scrollbar-track { background: rgb(var(--rgb-bg-raised)); }
   ::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #10B981, #064E3B);
     border-radius: 999px;
@@ -517,8 +527,8 @@ section, .section-contain {
 
   /* ── Luxury card — gradient border ──────────────────────────── */
   .luxury-card {
-    background: linear-gradient(180deg, #18181B 0%, #141416 100%);
-    border: 1px solid rgba(42,42,45,0.8);
+    background: linear-gradient(180deg, rgb(var(--rgb-bg-elevated)) 0%, rgb(var(--rgb-bg-base)) 100%);
+    border: 1px solid rgb(var(--rgb-surface-border));
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
   }
@@ -536,10 +546,10 @@ section, .section-contain {
     pointer-events: none;
   }
   .luxury-card:hover {
-    background: linear-gradient(180deg, #1F1F22 0%, #18181B 100%);
+    background: linear-gradient(180deg, rgb(var(--rgb-surface)) 0%, rgb(var(--rgb-bg-elevated)) 100%);
     transform: translateY(-4px);
     box-shadow:
-      0 20px 60px -10px rgba(0,0,0,0.6),
+      0 20px 60px -10px rgba(0,0,0,0.15),
       0 0 40px -5px rgba(16,185,129,0.25);
     border-color: rgba(16,185,129,0.3);
   }

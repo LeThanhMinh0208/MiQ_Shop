@@ -123,7 +123,6 @@ const DropdownPanel = ({ item, lang, onClose }) => (
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-text-primary hover:bg-bg-raised hover:text-primary transition-colors"
           >
-            <span className="text-base leading-none">{sub.icon}</span>
             <span>{lang === 'vi' ? sub.vi : sub.en}</span>
           </Link>
         ))}
@@ -593,10 +592,7 @@ const Navbar = () => {
                             onClick={() => { setMobileOpen(false); setMobileExpanded(null); }}
                             className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg mx-1 transition"
                           >
-                            {'icon' in sub
-                              ? <span className="text-base leading-none">{sub.icon}</span>
-                              : <ChevronRight className="w-3 h-3 text-text-muted" />
-                            }
+                            <ChevronRight className="w-3 h-3 text-text-muted" />
                             <span>{lang === 'vi' ? (sub.vi || sub.label) : (sub.en || sub.label)}</span>
                             {sub.special && (
                               <span className="ml-auto text-[9px] bg-primary/15 text-primary font-black px-1.5 py-0.5 rounded-full">

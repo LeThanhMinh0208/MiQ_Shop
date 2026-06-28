@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Users, Zap, ArrowRight, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { CheckCircle, Users, Zap, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatCurrency.js';
 
 const PACKAGES = [
@@ -36,6 +34,7 @@ const PACKAGES = [
     tagline: 'Trang bị đầy đủ cả mùa giải',
     badge: 'GIÁ TRỊ NHẤT',
     badgeClass: 'bg-primary',
+    featured: true,
     savePercent: 20,
     originalPrice: 1850000,
     discountedPrice: 1480000,
@@ -59,50 +58,27 @@ const PACKAGES = [
 ];
 
 // ── Package card ───────────────────────────────────────────────────────────
-const PackageCard = ({ pkg, index, selected, onSelect }) => (
+const PackageCard = ({ pkg, index }) => (
   <motion.div
     initial={{ opacity: 0, y: 32 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-    onClick={() => onSelect(pkg.id)}
-    className={`relative flex flex-col rounded-3xl overflow-hidden border cursor-pointer transition-all duration-300 ${
-      selected
-        ? 'border-primary/70 shadow-neon bg-surface scale-[1.02]'
-        : 'border-surface-border bg-surface hover:border-primary/40 hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)] hover:scale-[1.01]'
+    whileHover={{ y: -6 }}
+    className={`relative flex flex-col rounded-3xl overflow-hidden border transition-all duration-300 ${
+      pkg.featured
+        ? 'border-primary/60 shadow-neon bg-surface'
+        : 'border-surface-border bg-surface hover:border-primary/30 hover:shadow-[0_16px_48px_rgba(0,0,0,0.4)]'
     }`}
   >
-    {/* Selected accent bar */}
-    <AnimatePresence>
-      {selected && (
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          exit={{ scaleX: 0 }}
-          className="h-1 w-full bg-gradient-to-r from-primary/50 via-primary to-primary/50 origin-left"
-        />
-      )}
-    </AnimatePresence>
-
-    {/* Selection check */}
-    <AnimatePresence>
-      {selected && (
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          className="absolute top-4 left-4 z-20"
-        >
-          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-neon-xs">
-            <Star className="w-3.5 h-3.5 fill-white text-white" />
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    {/* Featured top accent bar */}
+    {pkg.featured && (
+      <div className="h-1 w-full bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
+    )}
 
     {/* Badge */}
     {pkg.badge && (
-      <div className={`absolute top-5 right-5 ${pkg.badgeClass} text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full z-10`}>
+      <div className={`absolute ${pkg.featured ? 'top-6' : 'top-5'} right-5 ${pkg.badgeClass} text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full z-10`}>
         {pkg.badge}
       </div>
     )}
@@ -144,115 +120,77 @@ const PackageCard = ({ pkg, index, selected, onSelect }) => (
       </ul>
 
       {/* CTA */}
-      <Link
-        to={`/bao-gia?package=${pkg.id}`}
-        onClick={(e) => e.stopPropagation()}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
         className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wide transition-all duration-200 ${
-          selected
-            ? 'bg-primary text-white shadow-neon hover:shadow-neon-lg'
+          pkg.featured
+            ? 'bg-primary text-white shadow-neon hover:shadow-neon-lg hover:bg-primary-600'
             : 'border-2 border-surface-border text-text-primary hover:border-primary/50 hover:bg-primary/5'
         }`}
       >
-        {selected ? 'Nhận báo giá ngay' : 'Chọn gói này'}
+        Nhận báo giá ngay
         <ArrowRight className="w-4 h-4" />
-      </Link>
+      </motion.button>
     </div>
   </motion.div>
 );
 
 // ── Main ───────────────────────────────────────────────────────────────────
-const TeamComboPackages = () => {
-  const [selectedPkg, setSelectedPkg] = useState(null);
+const TeamComboPackages = () => (
+  <section className="py-10 lg:py-12 bg-bg-base overflow-hidden">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20">
 
-  const handleSelect = (id) => setSelectedPkg((prev) => (prev === id ? null : id));
-
-  return (
-    <section className="py-10 lg:py-12 bg-bg-base overflow-hidden">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20">
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-[0.22em] px-3.5 py-1.5 rounded-full mb-5">
-            <Users className="w-3 h-3" />
-            Đặt Theo Nhóm
-          </div>
-          <h2 className="font-display text-4xl md:text-5xl xl:text-6xl font-bold text-text-primary mb-3">
-            COMBO ĐỒNG PHỤC ĐỘI
-          </h2>
-          <p className="font-display text-lg font-bold text-primary mb-3">
-            Trang bị cả đội — Tiết kiệm hơn, đẹp hơn
-          </p>
-          <p className="text-text-muted text-sm max-w-xl mx-auto">
-            Chọn gói phù hợp với đội bạn. Bấm vào thẻ để chọn, sau đó nhận báo giá chi tiết.
-          </p>
-        </motion.div>
-
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
-          {PACKAGES.map((pkg, i) => (
-            <PackageCard
-              key={pkg.id}
-              pkg={pkg}
-              index={i}
-              selected={selectedPkg === pkg.id}
-              onSelect={handleSelect}
-            />
-          ))}
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-12"
+      >
+        <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-[0.22em] px-3.5 py-1.5 rounded-full mb-5">
+          <Users className="w-3 h-3" />
+          Đặt Theo Nhóm
         </div>
+        <h2 className="font-display text-4xl md:text-5xl xl:text-6xl font-bold text-text-primary mb-3">
+          COMBO ĐỒNG PHỤC ĐỘI
+        </h2>
+        <p className="font-display text-lg font-bold text-primary mb-3">
+          Trang bị cả đội — Tiết kiệm hơn, đẹp hơn
+        </p>
+        <p className="text-text-muted text-sm max-w-xl mx-auto">
+          Gói combo dành riêng cho đội bóng. Càng đặt nhiều, càng tiết kiệm. Bao gồm in ấn theo yêu cầu.
+        </p>
+      </motion.div>
 
-        {/* Selected CTA banner */}
-        <AnimatePresence>
-          {selectedPkg && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-primary/10 border border-primary/30 rounded-2xl px-6 py-4"
-            >
-              <div>
-                <p className="font-bold text-text-primary">
-                  Đã chọn: <span className="text-primary">{PACKAGES.find(p => p.id === selectedPkg)?.name}</span>
-                </p>
-                <p className="text-sm text-text-muted">Nhấn nhận báo giá để chúng tôi liên hệ tư vấn chi tiết</p>
-              </div>
-              <Link
-                to={`/bao-gia?package=${selectedPkg}`}
-                className="flex-shrink-0 flex items-center gap-2 bg-primary text-white font-bold uppercase tracking-wider px-6 py-3 rounded-xl hover:shadow-neon transition-all"
-              >
-                Nhận báo giá ngay
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Trust footer */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-6 mt-10 pt-8 border-t border-surface-border"
-        >
-          {[
-            'Giảm giá theo số lượng',
-            'In ấn theo yêu cầu',
-            'Giao hàng nhanh 3–5 ngày',
-            'Bảo hành chất lượng in',
-          ].map((text, i) => (
-            <span key={i} className="flex items-center gap-2 text-sm text-text-muted">
-              <span className="text-primary font-bold">✓</span>
-              {text}
-            </span>
-          ))}
-        </motion.div>
+      {/* Cards grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
+        {PACKAGES.map((pkg, i) => (
+          <PackageCard key={pkg.id} pkg={pkg} index={i} />
+        ))}
       </div>
-    </section>
-  );
-};
+
+      {/* Trust footer */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="flex flex-wrap justify-center gap-6 mt-10 pt-8 border-t border-surface-border"
+      >
+        {[
+          'Giảm giá theo số lượng',
+          'In ấn theo yêu cầu',
+          'Giao hàng nhanh 3–5 ngày',
+          'Bảo hành chất lượng in',
+        ].map((text, i) => (
+          <span key={i} className="flex items-center gap-2 text-sm text-text-muted">
+            <span className="text-primary font-bold">✓</span>
+            {text}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  </section>
+);
 
 export default TeamComboPackages;

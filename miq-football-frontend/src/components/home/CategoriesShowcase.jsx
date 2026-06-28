@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchCategories, fetchCategoryFeatured } from '../../services/categoryService.js';
 import { formatCurrency } from '../../utils/formatCurrency.js';
 import { useLanguageStore } from '../../store/languageStore.js';
+import { optimizeImg } from '../../utils/cloudinary.js';
 
 // Bento slot config: boots = large left (col-span-7, row-span-3), 3 others stacked right (col-span-5, row-span-1 each)
 const BENTO_CONFIG = [
@@ -57,7 +58,7 @@ const BentoCard = ({ category, config, index }) => {
         {category.image?.url ? (
           <>
             <motion.img
-              src={category.image.url}
+              src={optimizeImg(category.image.url)}
               alt={category.name}
               loading="lazy"
               decoding="async"
@@ -169,7 +170,7 @@ const MiniProductCard = ({ product }) => (
         style={{ aspectRatio: '3/4' }}
       >
         <img
-          src={product.images?.[0]?.url}
+          src={optimizeImg(product.images?.[0]?.url)}
           alt={product.name}
           loading="lazy"
           decoding="async"

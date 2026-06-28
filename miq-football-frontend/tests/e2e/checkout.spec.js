@@ -49,6 +49,73 @@ async function loginViaUI(page, email, password) {
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 }
 
+// ── Address pre-fill regression ────────────────────────────────────────────
+// Regression test for the sync() bug in Profile.jsx TabAddresses.
+// Before fix: profileService.addAddress() returns an addresses array; sync()
+// called updated.addresses (undefined on an array) → setAddresses([]) and
+// setUser(array), corrupting the auth store. Checkout then saw user.addresses
+// = undefined → hasAddresses = false → empty form instead of AddressPicker.
+//
+// After fix: sync(arr) calls setAddresses(arr) and setUser({...user, addresses: arr})
+// so the auth store keeps the full user object with the correct addresses.
+
+test('Checkout pre-fills saved address after adding one in Profile (sync bug regression)', async ({ page, request }) => {
+    const { email, password } = await seedTestUser(request);
+    await loginViaUI(page, email, password);
+
+    // Add a product to cart so /checkout doesn't immediately redirect to /cart
+    await page.goto('/products');
+    await expect(page.locator('[data-testid="product-card"]').first()).toBeVisible({ timeout: 10_000 });
+    await page.locator('[data-testid="product-card"]').first().click();
+    await expect(page.locator('[data-testid="size-option"]').first()).toBeVisible({ timeout: 10_000 });
+    await page.locator('[data-testid="size-option"]:not([disabled])').first().click();
+    await page.getByRole('button', { name: /thêm vào giỏ|add to cart/i }).click();
+
+    // Navigate to Profile → Addresses tab
+    await page.goto('/profile');
+    // Click the "Địa chỉ giao hàng" tab button (labelKey: 'myAddresses')
+    await page.getByRole('button', { name: /địa chỉ giao hàng/i }).click();
+
+    // Open the add-address form
+    await page.getByRole('button', { name: /thêm địa chỉ/i }).click();
+
+    // Fill in known values — these are what we'll assert at checkout
+    const TEST_FULL_NAME = 'E2E Prefill Tester';
+    const TEST_PHONE     = '0987001234';
+    const TEST_STREET    = '99 Prefill Ave';
+
+    await page.getByPlaceholder('VD: Nhà, Công ty...').fill('Nhà');
+    await page.getByPlaceholder('Nguyễn Văn A').fill(TEST_FULL_NAME);
+    // Phone has no placeholder — only required text input without placeholder in this form
+    await page.locator('form input:not([type="checkbox"]):not([placeholder])').first().fill(TEST_PHONE);
+    await page.getByPlaceholder('TP. Hồ Chí Minh').fill('TP. Hồ Chí Minh');
+    await page.getByPlaceholder('Quận 1').fill('Quận 1');
+    await page.getByPlaceholder('Phường Bến Nghé').fill('Phường Bến Nghé');
+    await page.getByPlaceholder('123 Lê Lợi').fill(TEST_STREET);
+    await page.locator('form input[type="checkbox"]').check();
+
+    // Submit — wait for the form to close (address card appears in list)
+    await page.getByRole('button', { name: /^thêm địa chỉ$/i }).click();
+    await expect(page.getByPlaceholder('Nguyễn Văn A')).toBeHidden({ timeout: 8_000 });
+
+    // At this point sync() has run. Navigate to checkout.
+    await page.goto('/checkout');
+
+    // ── The key assertions ─────────────────────────────────────────────────
+    // "Địa chỉ đã lưu" is the heading rendered by AddressPicker — only visible
+    // when user.addresses is populated in the auth store (hasAddresses = true).
+    // With the old bug, the auth store had user = array, so user.addresses was
+    // undefined, hasAddresses was false, and AddressPicker was never rendered.
+    await expect(page.getByText('Địa chỉ đã lưu')).toBeVisible({ timeout: 8_000 });
+
+    // The AddressPicker button shows the selected address name and phone —
+    // proving the correct address object was applied from the auth store.
+    // The name appears in the picker button AND the summary card below it,
+    // so use .first() to avoid strict-mode violation.
+    await expect(page.getByText(TEST_FULL_NAME).first()).toBeVisible();
+    await expect(page.getByText(TEST_PHONE, { exact: false }).first()).toBeVisible();
+});
+
 // ── COD checkout flow ──────────────────────────────────────────────────────
 
 test('COD checkout: add to cart → fill address → place order → success', async ({ page, request }) => {

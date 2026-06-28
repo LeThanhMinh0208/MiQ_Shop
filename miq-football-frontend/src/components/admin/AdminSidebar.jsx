@@ -41,7 +41,7 @@ const AdminSidebar = ({ collapsed = false, onToggle }) => {
         animate={{ width: collapsed ? 64 : 256 }}
         initial={false}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="hidden lg:flex flex-col bg-bg-elevated border-r border-surface-border min-h-screen sticky top-0 overflow-hidden flex-shrink-0"
+        className="hidden lg:flex flex-col bg-bg-elevated border-r border-surface-border min-h-screen sticky top-0 flex-shrink-0"
       >
         {/* Logo + collapse toggle */}
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} px-3 py-4 mb-2`}>
@@ -63,7 +63,7 @@ const AdminSidebar = ({ collapsed = false, onToggle }) => {
         </div>
 
         {/* Nav links */}
-        <nav className="space-y-0.5 flex-1 px-2">
+        <nav className="space-y-0.5 flex-1 px-2 overflow-y-auto overflow-x-hidden">
           {links.map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}

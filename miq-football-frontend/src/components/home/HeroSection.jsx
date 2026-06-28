@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Sparkles } from 'lucide-react';
@@ -88,24 +88,32 @@ const EnergyRings = () => {
 
 // ── Main component ─────────────────────────────────────────────────────────
 const HeroSection = () => {
-  const sectionRef    = useRef(null);
-  const btnRef        = useRef(null);
-  const t             = useLanguageStore((s) => s.t);
-  const cfg           = getHeroCfg();
-  const shouldReduce  = useReducedMotion();
+  const sectionRef      = useRef(null);
+  const btnRef          = useRef(null);
+  const spotlightElemRef = useRef(null);
+  const rafRef          = useRef(null);
+  const t               = useLanguageStore((s) => s.t);
+  const cfg             = getHeroCfg();
+  const shouldReduce    = useReducedMotion();
 
-  const [spotlight, setSpotlight] = useState({ x: 65, y: 45 });
-  const [btnPos,    setBtnPos]    = useState({ x: 0, y: 0 });
+  const [btnPos, setBtnPos] = useState({ x: 0, y: 0 });
 
+  // Direct DOM mutation — no React state, no re-render on every mouse move
   const handleMouseMove = useCallback((e) => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setSpotlight({
-      x: ((e.clientX - rect.left)  / rect.width)  * 100,
-      y: ((e.clientY - rect.top)   / rect.height) * 100,
+    if (rafRef.current) return; // skip if a frame is already queued
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const el = sectionRef.current;
+      const div = spotlightElemRef.current;
+      if (!el || !div) return;
+      const rect = el.getBoundingClientRect();
+      const x = ((e.clientX - rect.left)  / rect.width)  * 100;
+      const y = ((e.clientY - rect.top)   / rect.height) * 100;
+      div.style.background = `radial-gradient(circle 450px at ${x}% ${y}%, rgba(16,185,129,0.13) 0%, transparent 65%)`;
     });
   }, []);
+
+  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
 
   const handleMouseLeave = useCallback(() => {}, []);
 
@@ -138,7 +146,7 @@ const HeroSection = () => {
         {/* ── Video / image background ───────────────────────────── */}
         <div className="absolute inset-0">
           <video
-            autoPlay={!shouldReduce} loop muted playsInline preload="auto"
+            autoPlay={!shouldReduce} loop muted playsInline preload="metadata"
             poster={cfg.videoPoster || "https://images.unsplash.com/photo-1522778526097-ce0a22ceb253?w=1920&q=80"}
             className="absolute inset-0 w-full h-full object-cover"
           >
@@ -149,13 +157,11 @@ const HeroSection = () => {
           <div className="absolute inset-0 bg-noise opacity-20 mix-blend-overlay pointer-events-none" />
         </div>
 
-        {/* ── Cursor spotlight ──────────────────────────────────────── */}
+        {/* ── Cursor spotlight — updated via direct DOM ref, no React re-render ── */}
         <div
+          ref={spotlightElemRef}
           className="absolute inset-0 pointer-events-none z-[1]"
-          style={{
-            background: `radial-gradient(circle 450px at ${spotlight.x}% ${spotlight.y}%,
-              rgba(16,185,129,0.13) 0%, transparent 65%)`,
-          }}
+          style={{ background: 'radial-gradient(circle 450px at 65% 45%, rgba(16,185,129,0.13) 0%, transparent 65%)' }}
         />
 
         {/* ── Main 12-col grid ──────────────────────────────────────── */}
@@ -350,11 +356,10 @@ const HeroSection = () => {
               ))}
 
               {/* Interactive 3D shoe — drag to rotate 360°, or custom image from admin */}
-              <motion.div
+              <div
                 id="hero-shoe-slot"
                 className="relative z-10 w-[380px] h-[340px] lg:w-[500px] lg:h-[450px]"
-                animate={{ y: [0, -22, 0], rotate: [-1.5, 1.5, -1.5] }}
-                transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] }}
+                style={{ animation: shouldReduce ? 'none' : 'shoe-levitate 5.5s ease-in-out infinite' }}
               >
                 {cfg.shoeImageUrl ? (
                   <img
@@ -380,7 +385,7 @@ const HeroSection = () => {
                     {t('heroDrag')}
                   </p>
                 )}
-              </motion.div>
+              </div>
 
               {/* Pedestal ellipse shadow */}
               <div className="absolute bottom-16 lg:bottom-20 w-64 h-5 bg-primary/40 rounded-full blur-3xl pointer-events-none z-0" />
@@ -410,11 +415,11 @@ const HeroSection = () => {
           >
             <rect x="1.5" y="1.5" width="23" height="35" rx="11.5"
               stroke="currentColor" strokeWidth="1.5" fill="none" />
-            <motion.rect
+            <rect
               x="10.5" y="7" width="5" height="8" rx="2.5"
               fill="currentColor"
-              animate={{ y: [7, 16, 7] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ animation: shouldReduce ? 'none' : 'scroll-dot 1.6s ease-in-out infinite',
+                       transformBox: 'fill-box', transformOrigin: 'center' }}
             />
           </svg>
         </motion.button>
