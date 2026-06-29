@@ -15,6 +15,7 @@ import chatRoutes from './chat.routes.js';
 import addressRoutes from './address.routes.js';
 import collectionRoutes from './collection.routes.js';
 import quoteRoutes from './quote.routes.js';
+import tradeInRoutes from './tradeIn.routes.js';
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/chat', chatRoutes);
 router.use('/collections', collectionRoutes);
 router.use('/quotes', quoteRoutes);
+router.use('/trade-ins', tradeInRoutes);
 
 export default router;

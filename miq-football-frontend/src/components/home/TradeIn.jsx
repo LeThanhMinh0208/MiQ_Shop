@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { RefreshCw, ChevronDown, CheckCircle, X, Package, Star, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatCurrency.js';
 import { useLanguageStore } from '../../store/languageStore.js';
@@ -130,6 +131,7 @@ const AnimatedValue = ({ value, label }) => (
 // ── Main Component ─────────────────────────────────────────────────────────────
 const TradeIn = () => {
   const t = useLanguageStore((s) => s.t);
+  const navigate = useNavigate();
   const [productType, setProductType] = useState('');
   const [condition, setCondition] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
@@ -359,9 +361,8 @@ const TradeIn = () => {
               {/* CTA */}
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                disabled={!canSubmit}
-                onClick={() => setShowModal(true)}
-                className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-xl py-3.5 hover:bg-primary/90 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={() => navigate('/trade-in')}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-xl py-3.5 hover:bg-primary/90 transition"
               >
                 <RefreshCw className="w-4 h-4" />
                 Đăng ký đổi ngay
