@@ -2,27 +2,32 @@ import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Users, ArrowLeft, Send, Phone } from 'lucide-react';
+import { submitQuote } from '../services/quoteService.js';
+import toast from 'react-hot-toast';
 
-const PACKAGES = [
-  { id: '1', name: 'Academy Kit' },
-  { id: '2', name: 'Pro Team Kit' },
-  { id: '3', name: 'Champion Combo' },
-  { id: '4', name: 'Ultimate Bundle' },
+const REQUEST_TYPES = [
+  { id: 'in_ao',     name: 'In áo đội bóng' },
+  { id: 'combo_doi', name: 'Combo đội bóng' },
+  { id: 'mua_si',   name: 'Mua sỉ số lượng lớn' },
+  { id: 'khac',     name: 'Khác' },
 ];
 
 const INITIAL = {
-  teamName: '',
+  teamName:    '',
   contactName: '',
-  phone: '',
-  email: '',
-  playerCount: '',
-  packageId: '',
-  notes: '',
+  phone:       '',
+  email:       '',
+  requestType: '',
+  quantity:    '',
+  note:        '',
 };
 
 const QuotePage = () => {
   const [params] = useSearchParams();
-  const [form, setForm] = useState({ ...INITIAL, packageId: params.get('package') || '' });
+  const [form, setForm] = useState({
+    ...INITIAL,
+    requestType: params.get('package') || '',
+  });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -31,9 +36,22 @@ const QuotePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    setSubmitted(true);
+    try {
+      await submitQuote({
+        teamName:    form.teamName,
+        name:        form.contactName,
+        phone:       form.phone,
+        email:       form.email,
+        requestType: form.requestType,
+        quantity:    Number(form.quantity) || 1,
+        note:        form.note,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputCls = 'w-full bg-surface border border-surface-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition text-sm';
@@ -116,9 +134,8 @@ const QuotePage = () => {
         >
           {/* Team name */}
           <div>
-            <label className={labelCls}>Tên đội bóng *</label>
+            <label className={labelCls}>Tên đội bóng</label>
             <input
-              required
               value={form.teamName}
               onChange={set('teamName')}
               placeholder="VD: FC Thống Nhất"
@@ -163,26 +180,26 @@ const QuotePage = () => {
             />
           </div>
 
-          {/* Package + player count */}
+          {/* Request type + quantity */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Gói quan tâm *</label>
-              <select required value={form.packageId} onChange={set('packageId')} className={inputCls}>
-                <option value="">-- Chọn gói --</option>
-                {PACKAGES.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+              <label className={labelCls}>Loại yêu cầu *</label>
+              <select required value={form.requestType} onChange={set('requestType')} className={inputCls}>
+                <option value="">-- Chọn loại --</option>
+                {REQUEST_TYPES.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Số cầu thủ *</label>
+              <label className={labelCls}>Số lượng *</label>
               <input
                 required
                 type="number"
-                min="5"
-                max="99"
-                value={form.playerCount}
-                onChange={set('playerCount')}
+                min="1"
+                max="9999"
+                value={form.quantity}
+                onChange={set('quantity')}
                 placeholder="VD: 18"
                 className={inputCls}
               />
@@ -194,8 +211,8 @@ const QuotePage = () => {
             <label className={labelCls}>Yêu cầu thêm</label>
             <textarea
               rows={3}
-              value={form.notes}
-              onChange={set('notes')}
+              value={form.note}
+              onChange={set('note')}
               placeholder="Màu sắc, thiết kế áo, thời gian cần giao, v.v."
               className={`${inputCls} resize-none`}
             />

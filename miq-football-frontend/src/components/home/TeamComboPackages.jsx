@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { CheckCircle, Users, Zap, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatCurrency.js';
 
 const PACKAGES = [
@@ -120,18 +121,20 @@ const PackageCard = ({ pkg, index }) => (
       </ul>
 
       {/* CTA */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wide transition-all duration-200 ${
-          pkg.featured
-            ? 'bg-primary text-white shadow-neon hover:shadow-neon-lg hover:bg-primary-600'
-            : 'border-2 border-surface-border text-text-primary hover:border-primary/50 hover:bg-primary/5'
-        }`}
-      >
-        Nhận báo giá ngay
-        <ArrowRight className="w-4 h-4" />
-      </motion.button>
+      <Link to="/quote">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wide transition-all duration-200 ${
+            pkg.featured
+              ? 'bg-primary text-white shadow-neon hover:shadow-neon-lg hover:bg-primary-600'
+              : 'border-2 border-surface-border text-text-primary hover:border-primary/50 hover:bg-primary/5'
+          }`}
+        >
+          Nhận báo giá ngay
+          <ArrowRight className="w-4 h-4" />
+        </motion.div>
+      </Link>
     </div>
   </motion.div>
 );

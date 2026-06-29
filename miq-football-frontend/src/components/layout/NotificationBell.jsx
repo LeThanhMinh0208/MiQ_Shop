@@ -93,11 +93,11 @@ const NotificationBell = ({ dark = false }) => {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -6 }}
-            animate={{ opacity: 1, scale: 1,    y: 0 }}
-            exit={{ opacity: 0, scale: 0.95,    y: -6 }}
+            initial={{ opacity: 0, scale: 0.95, x: -6 }}
+            animate={{ opacity: 1, scale: 1,    x: 0 }}
+            exit={{ opacity: 0, scale: 0.95,    x: -6 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-0 mt-2 w-80 bg-bg-elevated rounded-2xl shadow-depth-lg border border-surface-border z-50 overflow-hidden"
+            className="absolute left-full top-0 ml-2 w-80 bg-bg-elevated rounded-2xl shadow-depth-lg border border-surface-border z-[100] overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-surface-border">

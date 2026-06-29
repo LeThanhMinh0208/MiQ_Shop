@@ -27,6 +27,7 @@ import ProductCompare from './pages/ProductCompare.jsx';
 import Wishlist from './pages/Wishlist.jsx';
 import BrandPage from './pages/BrandPage.jsx';
 import CollectionPage from './pages/CollectionPage.jsx';
+import QuotePage from './pages/QuotePage.jsx';
 import Terms from './pages/Terms.jsx';
 import Privacy from './pages/Privacy.jsx';
 import CompareBar from './components/product/CompareBar.jsx';
@@ -43,6 +44,7 @@ const NewsManagement        = lazy(() => import('./pages/admin/NewsManagement.js
 const ChannelManagement     = lazy(() => import('./pages/admin/ChannelManagement.jsx'));
 const AdminChat             = lazy(() => import('./pages/admin/AdminChat.jsx'));
 const CollectionManagement  = lazy(() => import('./pages/admin/CollectionManagement.jsx'));
+const QuoteManagement       = lazy(() => import('./pages/admin/QuoteManagement.jsx'));
 import ChatWidget from './components/ui/ChatWidget.jsx';
 import { useAuthStore } from './store/authStore.js';
 import { useThemeStore } from './store/themeStore.js';
@@ -104,6 +106,7 @@ function AppContent() {
             <Route path="channel" element={<Suspense fallback={<AdminLoadingFallback />}><ChannelManagement /></Suspense>} />
             <Route path="chat" element={<Suspense fallback={<AdminLoadingFallback />}><AdminChat /></Suspense>} />
             <Route path="collections" element={<Suspense fallback={<AdminLoadingFallback />}><CollectionManagement /></Suspense>} />
+            <Route path="quotes" element={<Suspense fallback={<AdminLoadingFallback />}><QuoteManagement /></Suspense>} />
           </Route>
         </Routes>
       ) : (
@@ -126,6 +129,7 @@ function AppContent() {
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/brands/:slug" element={<BrandPage />} />
             <Route path="/collections/:slug" element={<CollectionPage />} />
+            <Route path="/quote" element={<QuotePage />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
           </Routes>
