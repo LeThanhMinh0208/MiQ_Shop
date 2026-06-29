@@ -47,6 +47,7 @@ const AdminChat             = lazy(() => import('./pages/admin/AdminChat.jsx'));
 const CollectionManagement  = lazy(() => import('./pages/admin/CollectionManagement.jsx'));
 const QuoteManagement       = lazy(() => import('./pages/admin/QuoteManagement.jsx'));
 const TradeInManagement     = lazy(() => import('./pages/admin/TradeInManagement.jsx'));
+const PrintOrderManagement  = lazy(() => import('./pages/admin/PrintOrderManagement.jsx'));
 import ChatWidget from './components/ui/ChatWidget.jsx';
 import { useAuthStore } from './store/authStore.js';
 import { useThemeStore } from './store/themeStore.js';
@@ -110,6 +111,7 @@ function AppContent() {
             <Route path="collections" element={<Suspense fallback={<AdminLoadingFallback />}><CollectionManagement /></Suspense>} />
             <Route path="quotes" element={<Suspense fallback={<AdminLoadingFallback />}><QuoteManagement /></Suspense>} />
             <Route path="trade-ins" element={<Suspense fallback={<AdminLoadingFallback />}><TradeInManagement /></Suspense>} />
+            <Route path="print-orders" element={<Suspense fallback={<AdminLoadingFallback />}><PrintOrderManagement /></Suspense>} />
           </Route>
         </Routes>
       ) : (

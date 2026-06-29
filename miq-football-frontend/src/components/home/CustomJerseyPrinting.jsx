@@ -169,7 +169,7 @@ const CustomJerseyPrinting = () => (
         </div>
 
         <Link
-          to="/products"
+          to="/print-order"
           className="flex-shrink-0 inline-flex items-center gap-3 bg-primary hover:bg-primary-600 text-white font-black text-sm uppercase tracking-wide px-8 py-4 rounded-2xl transition-all duration-200 shadow-neon hover:shadow-neon-lg whitespace-nowrap"
         >
           Đặt In Ngay

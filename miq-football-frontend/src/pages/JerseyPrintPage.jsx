@@ -1,91 +1,68 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shirt, ChevronLeft, Loader, Check } from 'lucide-react';
+import { Printer, ChevronLeft, Loader, Check, Plus, Trash2, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuthStore } from '../store/authStore.js';
-import { useLanguageStore } from '../store/languageStore.js';
 import { createPrintOrder } from '../services/printOrderService.js';
 
 const JERSEY_TYPES = [
-  { value: 'club', labelKey: 'jerseyDesignClub' },
-  { value: 'national', labelKey: 'jerseyDesignNational' },
-  { value: 'custom', labelKey: 'jerseyDesignCustom' },
+  { value: 'sublimation', label: 'Sublimation (In nhiệt toàn thân)', price: 200000 },
+  { value: 'heat_press',  label: 'Heat Press (In chuyển nhiệt)',      price: 150000 },
+  { value: 'embroidery',  label: 'Thêu logo & tên',                   price: 250000 },
 ];
 
-const FONT_OPTIONS = ['BLOCK', 'BOLD', 'ITALIC', 'RETRO', 'SLIM'];
+const SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL'];
 
-const COLOR_OPTIONS = [
-  { label: 'Đỏ', value: '#DC2626' },
-  { label: 'Xanh lá', value: '#16A34A' },
-  { label: 'Xanh dương', value: '#2563EB' },
-  { label: 'Vàng', value: '#CA8A04' },
-  { label: 'Trắng', value: '#F9FAFB' },
-  { label: 'Đen', value: '#111827' },
-  { label: 'Tím', value: '#7C3AED' },
-  { label: 'Cam', value: '#EA580C' },
-];
+const newPlayer = () => ({ playerName: '', jerseyNumber: '', size: 'M' });
 
-const EMPTY_FORM = {
-  jerseyType: 'club',
-  playerName: '',
-  playerNumber: '',
-  font: 'BLOCK',
-  quantity: 1,
-  color: '#DC2626',
-  logoUrl: '',
-  notes: '',
-  contactPhone: '',
-  deliveryAddress: '',
-};
+const fmt = (n) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
 
 const JerseyPrintPage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
-  const t = useLanguageStore((s) => s.t);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [loading, setLoading]   = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
-  // Auto-fill contact info from user profile
-  useEffect(() => {
-    if (!user) return;
-    const defaultAddr = user.addresses?.find((a) => a.isDefault) || user.addresses?.[0];
-    setForm((f) => ({
-      ...f,
-      contactPhone:    f.contactPhone    || defaultAddr?.phone || '',
-      deliveryAddress: f.deliveryAddress || (defaultAddr
-        ? [defaultAddr.street, defaultAddr.ward, defaultAddr.district, defaultAddr.city].filter(Boolean).join(', ')
-        : ''),
-    }));
-  }, [user]);
+  const [jerseyType, setJerseyType]   = useState('sublimation');
+  const [teamName, setTeamName]       = useState('');
+  const [players, setPlayers]         = useState([newPlayer()]);
+  const [contactName, setContactName] = useState('');
+  const [phone, setPhone]             = useState('');
+  const [email, setEmail]             = useState('');
+  const [notes, setNotes]             = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [submitted, setSubmitted]     = useState(false);
 
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const unitPrice  = JERSEY_TYPES.find((j) => j.value === jerseyType)?.price ?? 200000;
+  const totalPrice = players.length * unitPrice;
+
+  const addPlayer = () => setPlayers((p) => [...p, newPlayer()]);
+
+  const removePlayer = (i) => {
+    if (players.length <= 1) return;
+    setPlayers((p) => p.filter((_, idx) => idx !== i));
+  };
+
+  const updatePlayer = (i, field, val) =>
+    setPlayers((p) => p.map((pl, idx) => (idx === i ? { ...pl, [field]: val } : pl)));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      toast.error('Vui lòng đăng nhập để đặt in áo');
-      navigate('/login');
-      return;
-    }
-    if (!form.contactPhone.trim()) {
-      toast.error('Vui lòng nhập số điện thoại liên hệ');
-      return;
-    }
-    if (!form.deliveryAddress.trim()) {
-      toast.error('Vui lòng nhập địa chỉ giao hàng');
-      return;
-    }
+    if (!contactName.trim()) { toast.error('Vui lòng nhập tên liên hệ'); return; }
+    if (!phone.trim())       { toast.error('Vui lòng nhập số điện thoại'); return; }
+    const invalid = players.some((p) => !p.playerName.trim() || !p.jerseyNumber.trim());
+    if (invalid) { toast.error('Vui lòng điền đủ tên và số áo cho tất cả cầu thủ'); return; }
 
     setLoading(true);
     try {
       await createPrintOrder({
-        ...form,
-        quantity: Number(form.quantity) || 1,
+        contactName: contactName.trim(),
+        phone:       phone.trim(),
+        email:       email.trim(),
+        teamName:    teamName.trim(),
+        jerseyType,
+        players,
+        notes:       notes.trim(),
+        // totalPrice intentionally omitted — server recomputes from players.length × unitPrice
       });
       setSubmitted(true);
-      toast.success(t('jerseySuccess'));
     } catch (err) {
       toast.error(err.message || 'Có lỗi xảy ra, vui lòng thử lại');
     } finally {
@@ -104,11 +81,25 @@ const JerseyPrintPage = () => {
           <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <Check className="w-10 h-10 text-primary" />
           </div>
-          <h2 className="font-display text-3xl font-bold mb-3">ĐẶT HÀNG THÀNH CÔNG!</h2>
-          <p className="text-text-muted mb-6">{t('jerseySuccess')}</p>
+          <h2 className="font-display text-3xl font-bold mb-3">ĐẶT IN THÀNH CÔNG!</h2>
+          <p className="text-text-muted mb-2">Cảm ơn bạn đã đặt in áo đội với MiQ Sport.</p>
+          <p className="text-text-muted mb-6 text-sm">Chúng tôi sẽ liên hệ xác nhận trong vòng 24h.</p>
           <div className="flex gap-3">
             <button onClick={() => navigate('/')} className="btn-outline flex-1">Về trang chủ</button>
-            <button onClick={() => { setSubmitted(false); setForm(EMPTY_FORM); }} className="btn-primary flex-1">Đặt thêm</button>
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setPlayers([newPlayer()]);
+                setContactName('');
+                setPhone('');
+                setEmail('');
+                setTeamName('');
+                setNotes('');
+              }}
+              className="btn-primary flex-1"
+            >
+              Đặt thêm
+            </button>
           </div>
         </motion.div>
       </div>
@@ -120,240 +111,235 @@ const JerseyPrintPage = () => {
       <div className="max-w-3xl mx-auto px-6">
         {/* Header */}
         <div className="mb-8">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-muted hover:text-primary transition mb-4 text-sm font-medium">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-text-muted hover:text-primary transition mb-4 text-sm font-medium"
+          >
             <ChevronLeft className="w-4 h-4" />
             Quay lại
           </button>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Shirt className="w-5 h-5 text-primary" />
+              <Printer className="w-5 h-5 text-primary" />
             </div>
-            <span className="text-primary text-xs font-bold uppercase tracking-widest">{t('jerseyPrintBadge')}</span>
+            <span className="text-primary text-xs font-bold uppercase tracking-widest">Dịch Vụ In Ấn</span>
           </div>
-          <h1 className="font-display text-4xl font-bold text-text-primary">{t('jerseyPrintTitle')}</h1>
+          <h1 className="font-display text-4xl font-bold text-text-primary">IN ĐẶT THEO ĐỘI</h1>
           <p className="text-text-muted mt-2">Điền thông tin bên dưới, chúng tôi sẽ liên hệ xác nhận trong vòng 24h.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Jersey Type */}
+          {/* Jersey type */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-bg-elevated rounded-2xl border border-surface-border p-6"
           >
-            <h3 className="font-display font-bold text-lg mb-4">{t('jerseyType')}</h3>
-            <div className="flex gap-3 flex-wrap">
+            <h3 className="font-display font-bold text-lg mb-4">Loại in ấn</h3>
+            <div className="flex flex-col gap-2">
               {JERSEY_TYPES.map((jt) => (
-                <button
+                <label
                   key={jt.value}
-                  type="button"
-                  onClick={() => set('jerseyType', jt.value)}
-                  className={`px-5 py-2.5 rounded-xl border-2 font-semibold text-sm transition ${
-                    form.jerseyType === jt.value
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-surface-border text-text-primary hover:border-primary/40'
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 cursor-pointer transition ${
+                    jerseyType === jt.value
+                      ? 'border-primary bg-primary/10'
+                      : 'border-surface-border hover:border-primary/40'
                   }`}
                 >
-                  {t(jt.labelKey)}
-                </button>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="jerseyType"
+                      value={jt.value}
+                      checked={jerseyType === jt.value}
+                      onChange={() => setJerseyType(jt.value)}
+                      className="accent-primary"
+                    />
+                    <span className={`font-semibold text-sm ${jerseyType === jt.value ? 'text-primary' : 'text-text-primary'}`}>
+                      {jt.label}
+                    </span>
+                  </div>
+                  <span className="font-bold text-sm text-primary">{fmt(jt.price)}/áo</span>
+                </label>
               ))}
             </div>
           </motion.div>
 
-          {/* Player info */}
+          {/* Team name */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
+            transition={{ delay: 0.04 }}
             className="bg-bg-elevated rounded-2xl border border-surface-border p-6"
           >
-            <h3 className="font-display font-bold text-lg mb-4">Thông tin in ấn</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">{t('jerseyName')}</label>
-                <input
-                  value={form.playerName}
-                  onChange={(e) => set('playerName', e.target.value.toUpperCase())}
-                  placeholder="VD: NGUYEN VAN A"
-                  className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-bold tracking-wider"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">{t('jerseyNumber')}</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={form.playerNumber}
-                  onChange={(e) => set('playerNumber', e.target.value)}
-                  placeholder="VD: 10"
-                  className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-bold text-2xl text-center"
-                />
-              </div>
-            </div>
-
-            {/* Font */}
-            <div className="mt-4">
-              <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-2">{t('jerseyFont')}</label>
-              <div className="flex gap-2 flex-wrap">
-                {FONT_OPTIONS.map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => set('font', f)}
-                    className={`px-4 py-2 rounded-lg border-2 text-sm font-bold uppercase tracking-wider transition ${
-                      form.font === f
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-surface-border text-text-primary hover:border-primary/40'
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
+            <h3 className="font-display font-bold text-lg mb-4">Thông tin đội</h3>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">
+                Tên đội bóng <span className="text-text-muted font-normal normal-case">(không bắt buộc)</span>
+              </label>
+              <input
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="VD: FC Rồng Vàng"
+                className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
             </div>
           </motion.div>
 
-          {/* Color + Quantity */}
+          {/* Player list */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.08 }}
             className="bg-bg-elevated rounded-2xl border border-surface-border p-6"
           >
-            <h3 className="font-display font-bold text-lg mb-4">Màu sắc & Số lượng</h3>
-            <div className="grid sm:grid-cols-2 gap-6">
-              {/* Color */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-2">{t('jerseyColor')}</label>
-                <div className="flex gap-2 flex-wrap">
-                  {COLOR_OPTIONS.map((c) => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => set('color', c.value)}
-                      title={c.label}
-                      className={`w-9 h-9 rounded-full border-4 transition ${
-                        form.color === c.value ? 'border-primary scale-110 shadow-lg' : 'border-surface-border hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: c.value }}
-                    />
-                  ))}
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                <h3 className="font-display font-bold text-lg">Danh sách cầu thủ</h3>
+                <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
+                  {players.length} người
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={addPlayer}
+                className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg transition"
+              >
+                <Plus className="w-4 h-4" />
+                Thêm
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-[1fr_90px_80px_36px] gap-2 px-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Tên in trên áo</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Số áo</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Cỡ</span>
+                <span />
               </div>
 
-              {/* Quantity */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-2">{t('jerseyQuantity')}</label>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => set('quantity', Math.max(1, form.quantity - 1))}
-                    className="w-10 h-10 rounded-xl border-2 border-surface-border text-text-primary hover:border-primary transition font-bold text-lg"
-                  >
-                    −
-                  </button>
+              {players.map((pl, i) => (
+                <div key={i} className="grid grid-cols-[1fr_90px_80px_36px] gap-2 items-center">
                   <input
+                    required
+                    value={pl.playerName}
+                    onChange={(e) => updatePlayer(i, 'playerName', e.target.value.toUpperCase())}
+                    placeholder={`NGUYEN VAN ${String.fromCharCode(65 + (i % 26))}`}
+                    className="px-3 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-bold tracking-wide text-sm"
+                  />
+                  <input
+                    required
                     type="number"
                     min="1"
-                    value={form.quantity}
-                    onChange={(e) => set('quantity', Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-20 text-center px-3 py-2 rounded-xl border-2 border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none font-bold text-lg"
+                    max="99"
+                    value={pl.jerseyNumber}
+                    onChange={(e) => updatePlayer(i, 'jerseyNumber', e.target.value)}
+                    placeholder="10"
+                    className="px-3 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-bold text-center text-sm"
                   />
+                  <select
+                    value={pl.size}
+                    onChange={(e) => updatePlayer(i, 'size', e.target.value)}
+                    className="px-2 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none text-sm font-semibold cursor-pointer"
+                  >
+                    {SIZES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                   <button
                     type="button"
-                    onClick={() => set('quantity', form.quantity + 1)}
-                    className="w-10 h-10 rounded-xl border-2 border-surface-border text-text-primary hover:border-primary transition font-bold text-lg"
+                    onClick={() => removePlayer(i)}
+                    disabled={players.length <= 1}
+                    title={players.length <= 1 ? 'Cần ít nhất 1 cầu thủ' : 'Xóa'}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl border border-surface-border text-text-muted hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-muted disabled:hover:border-surface-border"
                   >
-                    +
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                {form.quantity >= 10 && (
-                  <p className="text-xs text-primary mt-1.5 font-medium">Giảm 10% cho đơn từ 10 áo!</p>
-                )}
-              </div>
+              ))}
             </div>
+
+            <button
+              type="button"
+              onClick={addPlayer}
+              className="mt-4 w-full py-2.5 rounded-xl border-2 border-dashed border-surface-border text-text-muted hover:border-primary/40 hover:text-primary transition text-sm font-semibold flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Thêm cầu thủ
+            </button>
           </motion.div>
 
-          {/* Extra info */}
+          {/* Contact info */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.12 }}
             className="bg-bg-elevated rounded-2xl border border-surface-border p-6 space-y-4"
           >
-            <h3 className="font-display font-bold text-lg">{t('jerseyNotes')} & Liên hệ</h3>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">{t('jerseyLogoUrl')}</label>
-              <input
-                value={form.logoUrl}
-                onChange={(e) => set('logoUrl', e.target.value)}
-                placeholder="https://..."
-                type="url"
-                className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">{t('jerseyNotes')}</label>
-              <textarea
-                value={form.notes}
-                onChange={(e) => set('notes', e.target.value)}
-                rows={3}
-                placeholder="Ghi chú thêm về thiết kế, yêu cầu đặc biệt..."
-                className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none resize-none"
-              />
-            </div>
-
+            <h3 className="font-display font-bold text-lg">Thông tin liên hệ</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">
-                  {t('jerseyContactPhone')} <span className="text-red-500">*</span>
+                  Họ tên <span className="text-red-500">*</span>
                 </label>
                 <input
                   required
-                  value={form.contactPhone}
-                  onChange={(e) => set('contactPhone', e.target.value)}
-                  placeholder="0900 000 000"
-                  type="tel"
-                  className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="Nguyễn Văn A"
+                  className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">
-                  {t('jerseyDeliveryAddr')} <span className="text-red-500">*</span>
+                  Số điện thoại <span className="text-red-500">*</span>
                 </label>
                 <input
                   required
-                  value={form.deliveryAddress}
-                  onChange={(e) => set('deliveryAddress', e.target.value)}
-                  placeholder="Số nhà, đường, quận, tỉnh..."
-                  className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="0900 000 000"
+                  className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">
+                Email <span className="text-text-muted font-normal normal-case">(không bắt buộc)</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ten@email.com"
+                className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-text-muted mb-1.5">Ghi chú</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                placeholder="Yêu cầu đặc biệt về màu sắc, font chữ, logo..."
+                className="w-full px-4 py-3 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              />
+            </div>
           </motion.div>
 
-          {/* Price estimate */}
+          {/* Price summary */}
           <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Báo giá tham khảo</p>
-              <p className="font-display text-2xl font-bold text-text-primary">
-                {form.quantity >= 10
-                  ? `${new Intl.NumberFormat('vi-VN').format(Math.round(120000 * 0.9))}đ`
-                  : '120.000đ'} / áo
-              </p>
-              <p className="text-xs text-text-muted mt-0.5">
-                × {form.quantity} áo = <span className="font-bold text-primary">
-                  {new Intl.NumberFormat('vi-VN').format(Math.round(120000 * (form.quantity >= 10 ? 0.9 : 1) * form.quantity))}đ
-                </span>
-                {form.quantity >= 10 && <span className="ml-1 text-primary">(đã giảm 10%)</span>}
+              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Tổng dự tính</p>
+              <p className="text-text-muted text-sm">
+                {players.length} áo × {fmt(unitPrice)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-text-muted">Giá có thể thay đổi</p>
-              <p className="text-xs text-text-muted">theo yêu cầu thiết kế</p>
+              <p className="font-display text-3xl font-black text-primary">{fmt(totalPrice)}</p>
+              <p className="text-xs text-text-muted mt-0.5">Giá cuối sẽ xác nhận qua điện thoại</p>
             </div>
           </div>
 
@@ -362,8 +348,8 @@ const JerseyPrintPage = () => {
             disabled={loading}
             className="btn-primary w-full !py-4 !text-base flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Shirt className="w-5 h-5" />}
-            {loading ? 'Đang gửi...' : t('jerseySubmit')}
+            {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Printer className="w-5 h-5" />}
+            {loading ? 'Đang gửi...' : 'Đặt In Ngay'}
           </button>
         </form>
       </div>
