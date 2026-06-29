@@ -52,7 +52,7 @@ const TryOnModal = ({ product, onClose }) => {
 
         <div className="grid md:grid-cols-2">
           <div className="bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center p-8 min-h-[260px] relative overflow-hidden">
-            <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 60%, rgba(16,185,129,0.2) 0%, transparent 70%)' }} />
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 60%, rgba(255,255,255,0.05) 0%, transparent 70%)' }} />
             <motion.img
               src={product.images?.[0]?.url}
               alt={product.name}
@@ -140,7 +140,7 @@ const FeaturedCard = ({ product, onOpenModal }) => {
         {/* Radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(circle at 50% 55%, rgba(16,185,129,0.28) 0%, rgba(16,185,129,0.08) 55%, transparent 78%)' }}
+          style={{ background: 'radial-gradient(circle at 50% 55%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 55%, transparent 78%)' }}
         />
 
         {/* Shoe: drops in from hero above, levitates, flies back up when scrolled away */}
@@ -162,7 +162,7 @@ const FeaturedCard = ({ product, onOpenModal }) => {
               animate={{ rotate: hovered ? 4 : -6, scale: hovered ? 1.08 : 1 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="w-full h-full object-contain"
-              style={{ filter: 'drop-shadow(0 20px 40px rgba(16,185,129,0.45))' }}
+              style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.50))' }}
             />
           </div>
         </motion.div>

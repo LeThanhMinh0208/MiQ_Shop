@@ -265,7 +265,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
 
         {/* ── Logo ─────────────────────────────────── */}
-        <Logo size="md" variant="full" white={dark} asLink={true} />
+        <Logo size="lg" variant="full" white={dark} asLink={true} />
 
         {/* ── Nav with dropdowns ───────────────────── */}
         <nav className="hidden md:flex items-center gap-1">

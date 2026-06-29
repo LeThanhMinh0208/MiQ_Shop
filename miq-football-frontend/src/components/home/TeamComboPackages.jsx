@@ -12,7 +12,7 @@ const PACKAGES = [
     originalPrice: 980000,
     discountedPrice: 784000,
     minPlayers: 10,
-    accentColor: '#10B981',
+    accentColor: '#E8590C',
     items: ['Áo đấu (in tên + số)', 'Quần short', 'Tất bóng đá', 'Bib tập luyện (5 cái)'],
   },
   {
@@ -39,7 +39,7 @@ const PACKAGES = [
     originalPrice: 1850000,
     discountedPrice: 1480000,
     minPlayers: 15,
-    accentColor: '#10B981',
+    accentColor: '#E8590C',
     items: ['Áo home + away (2 bộ)', 'Quần short + quần tập', 'Tất (3 đôi)', 'In cao cấp + Thêu logo CLB'],
   },
   {

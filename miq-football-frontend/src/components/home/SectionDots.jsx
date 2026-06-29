@@ -50,9 +50,9 @@ const SectionDots = ({ activeIndex, total, labels, onDotClick }) => {
               className="rounded-full flex-shrink-0"
               style={{
                 background: isActive
-                  ? 'linear-gradient(90deg, #10B981, #00FFAB)'
+                  ? 'linear-gradient(90deg, #E8590C, #FB923C)'
                   : '#71717A',
-                boxShadow: isActive ? '0 0 8px rgba(16,185,129,0.6)' : 'none',
+                boxShadow: isActive ? '0 0 8px rgba(232,89,12,0.60)' : 'none',
               }}
             />
           </button>

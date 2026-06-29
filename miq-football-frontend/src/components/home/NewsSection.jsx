@@ -21,7 +21,7 @@ const NEWS = [
     title: 'MiQ x Adidas Predator: Phiên bản giới hạn chính thức ra mắt',
     excerpt: 'Thiết kế độc quyền kết hợp công nghệ Zones của Adidas với bản sắc của MiQ Sport.',
     img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700&q=80',
-    categoryColor: '#10B981',
+    categoryColor: '#E8590C',
   },
   {
     id: 3,

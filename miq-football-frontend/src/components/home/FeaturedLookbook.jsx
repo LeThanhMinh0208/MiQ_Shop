@@ -32,7 +32,7 @@ const FeaturedLookbook = () => {
           >
             {/* Accent Label */}
             <div className="inline-block">
-              <span className="inline-block bg-emerald-500 text-black text-xs lg:text-sm font-bold px-4 py-2 rounded-full">
+              <span className="inline-block bg-primary text-white text-xs lg:text-sm font-bold px-4 py-2 rounded-full">
                 NEW COLLECTION 2026
               </span>
             </div>
@@ -43,7 +43,7 @@ const FeaturedLookbook = () => {
               <br />
               TO PITCH
               <br />
-              <span className="text-emerald-400">COLLECTION</span>
+              <span className="text-primary">COLLECTION</span>
             </h2>
 
             {/* Subtitle */}
@@ -55,11 +55,11 @@ const FeaturedLookbook = () => {
             {/* Feature Highlights */}
             <div className="flex flex-col sm:flex-row gap-4 py-4">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+                <div className="w-2 h-2 bg-primary rounded-full" />
                 <span className="text-sm text-gray-300">Premium Performance Fabric</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+                <div className="w-2 h-2 bg-primary rounded-full" />
                 <span className="text-sm text-gray-300">Custom Printing</span>
               </div>
             </div>
@@ -69,7 +69,7 @@ const FeaturedLookbook = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-lg px-8 py-4 rounded-lg transition-all duration-300 inline-flex items-center gap-2 group"
+                className="bg-primary hover:bg-primary/80 text-white font-bold text-lg px-8 py-4 rounded-lg transition-all duration-300 inline-flex items-center gap-2 group"
               >
                 Explore The Collection
                 <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>

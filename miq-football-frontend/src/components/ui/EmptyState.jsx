@@ -70,7 +70,7 @@ const CartIllustration = () => (
     animate={{ rotate: [-3, 3, -3] }}
     transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
   >
-    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-50 to-emerald-50 border border-primary/20 flex items-center justify-center">
+    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 border border-primary/20 flex items-center justify-center">
       <ShoppingCart className="w-9 h-9 text-primary/30 stroke-[1.5]" />
     </div>
   </motion.div>

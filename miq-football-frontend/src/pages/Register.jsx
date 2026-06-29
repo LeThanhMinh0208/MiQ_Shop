@@ -100,7 +100,7 @@ const Register = () => {
           alt="Football"
           className="absolute inset-0 w-full h-full object-cover opacity-35"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-950/85 via-emerald-950/60 to-gray-950" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-950/85 via-gray-900/60 to-gray-950" />
         <div className="relative z-10 p-12 max-w-sm">
           <div className="flex items-center gap-2 mb-8">
             <Zap className="w-8 h-8 text-primary fill-primary" />
@@ -261,7 +261,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary hover:bg-emerald-400 text-white font-bold text-sm tracking-wide transition-all shadow-button-primary hover:shadow-button-primary-hover disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary hover:bg-primary/80 text-white font-bold text-sm tracking-wide transition-all shadow-button-primary hover:shadow-button-primary-hover disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <><Loader className="w-4 h-4 animate-spin" /> {t('loading')}</>

@@ -44,7 +44,7 @@ const AdminSidebar = ({ collapsed = false, onToggle }) => {
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
         className="hidden lg:flex flex-col bg-bg-elevated border-r border-surface-border min-h-screen sticky top-0 flex-shrink-0"
       >
-        {/* Logo + collapse toggle */}
+        {/* Logo + notification bell + collapse toggle */}
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} px-3 py-4 mb-2`}>
           {!collapsed && (
             <div className="flex items-center gap-2 px-1">
@@ -52,15 +52,18 @@ const AdminSidebar = ({ collapsed = false, onToggle }) => {
               <span className="font-display text-xs font-bold uppercase tracking-widest text-text-muted">Admin</span>
             </div>
           )}
-          <button
-            onClick={onToggle}
-            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-bg-raised hover:text-text-primary transition flex-shrink-0"
-          >
-            {collapsed
-              ? <ChevronRight className="w-4 h-4" />
-              : <ChevronLeft  className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <NotificationBell dark={dark} />
+            <button
+              onClick={onToggle}
+              aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:bg-bg-raised hover:text-text-primary transition"
+            >
+              {collapsed
+                ? <ChevronRight className="w-4 h-4" />
+                : <ChevronLeft  className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         {/* Nav links */}
@@ -95,10 +98,7 @@ const AdminSidebar = ({ collapsed = false, onToggle }) => {
                 Giao diện
               </span>
             )}
-            <div className="flex items-center gap-1">
-              <NotificationBell dark={dark} />
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
           </div>
 
           <Link

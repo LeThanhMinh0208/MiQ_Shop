@@ -17,7 +17,7 @@ import Shoe3DRotator from './Shoe3DRotator.jsx';
 
 const SHOE_W  = 500;
 const SHOE_H  = 450;
-const FILTER  = 'drop-shadow(0 32px 64px rgba(16,185,129,0.65)) drop-shadow(0 10px 24px rgba(0,0,0,0.38))';
+const FILTER  = 'drop-shadow(0 32px 64px rgba(0,0,0,0.55)) drop-shadow(0 10px 24px rgba(0,0,0,0.38))';
 const AT_SNAP = 36; // px — within this distance of a snap point = "snapped"
 
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -175,7 +175,7 @@ const FloatingShoe = ({ containerRef }) => {
         className="absolute rounded-full pointer-events-none"
         style={{
           inset:      '-40%',
-          background: 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, rgba(16,185,129,0.08) 50%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 50%, transparent 70%)',
           animation:  'glow-pulse 3s ease-in-out infinite',
         }}
       />

@@ -17,7 +17,7 @@ const BENTO_CONFIG = [
 ];
 
 const GRADIENTS = [
-  'from-emerald-600 to-green-800',
+  'from-zinc-600 to-zinc-800',
   'from-blue-600 to-indigo-800',
   'from-purple-600 to-violet-800',
   'from-orange-500 to-red-600',
@@ -28,7 +28,7 @@ const GRADIENTS = [
 ];
 
 const ACCENT_COLORS = [
-  '#10B981', '#3B82F6', '#8B5CF6', '#F97316', '#14B8A6', '#F43F5E', '#7C3AED', '#F59E0B',
+  '#E8590C', '#3B82F6', '#8B5CF6', '#F97316', '#14B8A6', '#F43F5E', '#7C3AED', '#F59E0B',
 ];
 
 const COL_SPAN = {

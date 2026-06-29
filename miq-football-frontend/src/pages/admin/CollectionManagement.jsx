@@ -294,7 +294,7 @@ const InfoTab = ({ form, setForm }) => (
         <TextInput
           value={form.accentColor}
           onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
-          placeholder="#10B981"
+          placeholder="#E8590C"
           className="flex-1"
         />
       </div>
@@ -312,7 +312,7 @@ const CollectionModal = ({ mode, collection, onClose }) => {
     brand:       collection?.brand       || '',
     tagline:     collection?.tagline     || '',
     description: collection?.description || '',
-    accentColor: collection?.accentColor || '#10B981',
+    accentColor: collection?.accentColor || '#E8590C',
   });
   const [saving, setSaving] = useState(false);
 
@@ -518,7 +518,7 @@ const CollectionManagement = () => {
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <span
                               className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: col.accentColor || '#10B981' }}
+                              style={{ backgroundColor: col.accentColor || '#E8590C' }}
                             />
                             <p className="text-xs text-text-muted">{col.brand}</p>
                           </div>

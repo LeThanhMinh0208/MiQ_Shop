@@ -98,7 +98,7 @@ const NotFound = () => {
         style={{
           fontSize: 'clamp(5rem, 20vw, 10rem)',
           perspective: '600px',
-          background: 'linear-gradient(135deg, #10B981 0%, #047857 50%, #34D399 100%)',
+          background: 'linear-gradient(135deg, #C2410C 0%, #E8590C 50%, #FB923C 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',

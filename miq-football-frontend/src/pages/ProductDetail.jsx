@@ -484,6 +484,7 @@ const ProductDetail = () => {
   const [heartAnim, setHeartAnim] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [delivery, setDelivery] = useState('online');
+  const [selectedAddressId, setSelectedAddressId] = useState('');
 
   // Zoom state (desktop only)
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
@@ -495,7 +496,7 @@ const ProductDetail = () => {
 
   const addItem = useCartStore((s) => s.addItem);
   const { toggle, isWishlisted } = useWishlistStore();
-  const { isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const t = useLanguageStore((s) => s.t);
 
   useEffect(() => {
@@ -505,6 +506,14 @@ const ProductDetail = () => {
     setIsZooming(false);
     setShow3D(false);
   }, [id]);
+
+  useEffect(() => {
+    if (delivery !== 'store') return;
+    const addrs = user?.addresses || [];
+    if (!addrs.length) return;
+    const def = addrs.find((a) => a.isDefault) || addrs[0];
+    setSelectedAddressId((prev) => prev || def._id);
+  }, [delivery, user]);
 
   const { data: product, isLoading, isError, refetch } = useQuery({
     queryKey: ['product', id],
@@ -690,7 +699,7 @@ const ProductDetail = () => {
                       mode="interactive"
                       width="100%"
                       height="100%"
-                      filter="drop-shadow(0 24px 48px rgba(16,185,129,0.55)) drop-shadow(0 8px 20px rgba(0,0,0,0.22))"
+                      filter="drop-shadow(0 24px 48px rgba(0,0,0,0.50)) drop-shadow(0 8px 20px rgba(0,0,0,0.22))"
                     />
                   </div>
                   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-3/4 h-3 bg-primary/25 rounded-full blur-md pointer-events-none z-0" />
@@ -939,13 +948,35 @@ const ProductDetail = () => {
                   </button>
                 ))}
               </div>
-              {delivery === 'store' && (
-                <select className="mt-2 w-full px-3 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-sm text-text-primary focus:outline-none focus:border-primary">
-                  <option>HCM - 123 Nguyen Hue, D.1</option>
-                  <option>Hanoi - 45 Dinh Tien Hoang, Hoan Kiem</option>
-                  <option>Da Nang - 88 Bach Dang, Hai Chau</option>
-                </select>
-              )}
+              {delivery === 'store' && (() => {
+                const savedAddresses = user?.addresses || [];
+                if (!isAuthenticated) return (
+                  <p className="mt-2 text-xs text-text-muted">
+                    <Link to="/login" className="text-primary font-semibold hover:underline">Đăng nhập</Link> để chọn địa chỉ giao hàng.
+                  </p>
+                );
+                if (savedAddresses.length === 0) return (
+                  <p className="mt-2 text-xs text-text-muted">
+                    Bạn chưa có địa chỉ đã lưu.{' '}
+                    <Link to="/profile?tab=addresses" className="text-primary font-semibold hover:underline">Thêm địa chỉ</Link>
+                  </p>
+                );
+                return (
+                  <select
+                    value={selectedAddressId}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    className="mt-2 w-full px-3 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-sm text-text-primary focus:outline-none focus:border-primary"
+                  >
+                    {savedAddresses.map((addr) => (
+                      <option key={addr._id} value={addr._id}>
+                        {addr.label ? `${addr.label} — ` : ''}
+                        {[addr.street, addr.ward, addr.district, addr.city].filter(Boolean).join(', ')}
+                        {addr.isDefault ? ' (Mặc định)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                );
+              })()}
             </div>
 
             {/* Quantity */}
@@ -1016,7 +1047,7 @@ const ProductDetail = () => {
                   if (!selectedSize) { e.preventDefault(); toast.error(t('selectSize')); return; }
                   handleAddToCart();
                 }}
-                className="w-full bg-primary text-white font-bold uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-[0_0_24px_rgba(16,185,129,0.4)]"
+                className="w-full bg-primary text-white font-bold uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-[0_4px_20px_rgba(0,0,0,0.30)]"
               >
                 <Zap className="w-5 h-5" /> {t('buyNow')}
               </Link>

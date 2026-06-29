@@ -41,16 +41,16 @@ const NewsletterSection = () => {
           className="relative rounded-3xl overflow-hidden border border-primary/10"
           style={{
             background: 'linear-gradient(135deg, #0f172a 0%, #111827 55%, #0a0f1a 100%)',
-            boxShadow: '0 20px 80px rgba(16,185,129,0.12), 0 4px 20px rgba(0,0,0,0.4)',
+            boxShadow: '0 20px 80px rgba(0,0,0,0.20), 0 4px 20px rgba(0,0,0,0.4)',
           }}
         >
           {/* Glow orbs */}
           <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 65%)' }} />
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 65%)' }} />
           <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 65%)' }} />
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 65%)' }} />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none opacity-30"
-            style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 60%)' }} />
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 60%)' }} />
 
           {/* Sparkle dots decoration */}
           {[
@@ -94,7 +94,7 @@ const NewsletterSection = () => {
               >
                 NHẬN ƯU ĐÃI{' '}
                 <span style={{
-                  background: 'linear-gradient(135deg, #10B981 0%, #34D399 60%, #059669 100%)',
+                  background: 'linear-gradient(135deg, #EA580C 0%, #FB923C 60%, #E8590C 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -173,7 +173,7 @@ const NewsletterSection = () => {
                           Địa chỉ email
                         </label>
                         <div className={`relative rounded-xl border transition-all duration-200 ${
-                          focused ? 'border-primary shadow-[0_0_0_3px_rgba(16,185,129,0.15)]' : 'border-white/15'
+                          focused ? 'border-primary shadow-[0_0_0_3px_rgba(232,89,12,0.20)]' : 'border-white/15'
                         }`}>
                           <input
                             type="email"
@@ -190,7 +190,7 @@ const NewsletterSection = () => {
 
                       <button
                         type="submit"
-                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-emerald-500 text-white font-bold uppercase tracking-wider py-3.5 rounded-xl hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all duration-300 group"
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-white font-bold uppercase tracking-wider py-3.5 rounded-xl hover:shadow-[0_8px_24px_rgba(0,0,0,0.30)] transition-all duration-300 group"
                       >
                         {t('subscribe')}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

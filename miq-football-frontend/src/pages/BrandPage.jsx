@@ -16,10 +16,10 @@ const BRAND_INFO = {
     taglineEn: 'Exclusive brand — Designed in Vietnam',
     descVi: 'Bộ sưu tập MiQ là dòng sản phẩm độc quyền được thiết kế và sản xuất riêng cho MiQ Sport. Mỗi sản phẩm mang bản sắc riêng biệt, chất liệu cao cấp và giá trị Việt Nam.',
     descEn: 'The MiQ collection is an exclusive line designed and produced exclusively for MiQ Sport. Each product carries a unique identity, premium materials and Vietnamese heritage.',
-    accent: '#10B981',
+    accent: '#E8590C',
     badge: '★ EXCLUSIVE',
-    gradient: 'from-emerald-950 via-[#0A1A12] to-black',
-    bannerBg: 'radial-gradient(ellipse at 60% 40%, rgba(16,185,129,0.22) 0%, transparent 70%), linear-gradient(135deg, #0A1A12 0%, #000000 100%)',
+    gradient: 'from-zinc-950 via-zinc-900 to-black',
+    bannerBg: 'radial-gradient(ellipse at 60% 40%, rgba(232,89,12,0.22) 0%, transparent 70%), linear-gradient(135deg, #18181B 0%, #000000 100%)',
   },
   nike: {
     name: 'Nike',

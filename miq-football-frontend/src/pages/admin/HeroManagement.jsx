@@ -170,7 +170,7 @@ const ShoeImageUpload = ({ value, onChange }) => {
           <p className="text-[11px] text-text-muted mt-0.5">Upload → AI tự động tách nền → nền trong suốt</p>
         </div>
         <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition select-none ${
-          busy ? 'bg-bg-raised text-text-muted cursor-not-allowed' : 'bg-primary text-white hover:bg-emerald-600 shadow-md shadow-primary/20'
+          busy ? 'bg-bg-raised text-text-muted cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20'
         }`}>
           {busy ? (
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -313,7 +313,7 @@ const ShoeImageUpload = ({ value, onChange }) => {
               {!bgFailed && (
                 <button
                   onClick={() => { onChange(bgUrl); toast.success('Đã dùng ảnh tách nền'); }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white hover:bg-emerald-600 transition"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary/90 transition"
                 >
                   <Wand2 className="w-3.5 h-3.5" /> Dùng ảnh tách nền
                 </button>
@@ -475,7 +475,7 @@ const HeroManagement = () => {
           <button onClick={handleSave}
             className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition ${
               dirty
-                ? 'bg-primary text-white hover:bg-emerald-600 shadow-md shadow-primary/30'
+                ? 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/30'
                 : 'bg-bg-raised text-text-muted border border-surface-border'
             }`}>
             <Save className="w-4 h-4" /> Lưu thay đổi
@@ -512,7 +512,7 @@ const HeroManagement = () => {
         <div className="p-4 rounded-xl bg-gray-900 text-center space-y-1">
           <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Preview</p>
           <p className="font-black text-3xl" style={{
-            background: 'linear-gradient(135deg,#10B981,#34D399,#D4AF37)',
+            background: 'linear-gradient(135deg,#C2410C,#EA580C,#D4AF37)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
           }}>{config.line1 || 'BẮT ĐẦU'}</p>
           <p className="font-black text-3xl text-white">{config.line2 || 'TỪ ĐÂY'}</p>

@@ -42,11 +42,11 @@ const Logo = ({ variant = 'full', white = false, size = 'md', asLink = true, cla
         style={{ overflow: 'visible' }}
       >
         <defs>
-          {/* Green gradient for Q */}
+          {/* Orange gradient for Q */}
           <linearGradient id="logo-q-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#00FFB3" />
-            <stop offset="45%"  stopColor="#10B981" />
-            <stop offset="100%" stopColor="#059669" />
+            <stop offset="0%"   stopColor="#FB923C" />
+            <stop offset="45%"  stopColor="#E8590C" />
+            <stop offset="100%" stopColor="#C2410C" />
           </linearGradient>
 
           {/* Soft glow filter for the Q */}
@@ -76,11 +76,11 @@ const Logo = ({ variant = 'full', white = false, size = 'md', asLink = true, cla
             </feMerge>
           </filter>
 
-          {/* Gold accent gradient for SPORT tag */}
+          {/* Orange gradient for SPORT tag */}
           <linearGradient id="logo-sport-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stopColor="#10B981" />
-            <stop offset="60%"  stopColor="#34D399" />
-            <stop offset="100%" stopColor="#10B981" />
+            <stop offset="0%"   stopColor="#C2410C" />
+            <stop offset="60%"  stopColor="#FB923C" />
+            <stop offset="100%" stopColor="#C2410C" />
           </linearGradient>
         </defs>
 
@@ -99,9 +99,9 @@ const Logo = ({ variant = 'full', white = false, size = 'md', asLink = true, cla
         <rect x="34" y="18" width="5" height="20" rx="2" fill={baseColor} />
 
         {/* i dot — large glowing neon circle */}
-        <circle cx="36.5" cy="9" r="4.5" fill="#10B981" filter="url(#logo-dot-glow)" />
+        <circle cx="36.5" cy="9" r="4.5" fill="#E8590C" filter="url(#logo-dot-glow)" />
         {/* outer halo ring */}
-        <circle cx="36.5" cy="9" r="7" fill="rgba(16,185,129,0.18)" />
+        <circle cx="36.5" cy="9" r="7" fill="rgba(232,89,12,0.22)" />
 
         {/* ── Q — neon gradient + glow ─────────── */}
         <text

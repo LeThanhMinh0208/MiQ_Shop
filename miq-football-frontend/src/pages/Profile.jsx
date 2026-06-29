@@ -14,7 +14,7 @@ import { formatCurrency } from '../utils/formatCurrency.js';
 import ConfirmModal from '../components/ui/ConfirmModal.jsx';
 
 const avatarUrl = (user) =>
-  user?.avatar?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=10B981&color=fff&size=128`;
+  user?.avatar?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&background=E8590C&color=fff&size=128`;
 
 const STATUS_COLORS = {
   pending:   'bg-amber-500/15 text-amber-400 border-amber-500/30',

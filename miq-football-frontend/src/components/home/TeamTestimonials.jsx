@@ -11,7 +11,7 @@ const TESTIMONIALS = [
     quote: 'Vải cực kỳ thoáng mát và nhẹ. Cả đội mặc thoải mái suốt 90 phút mà không thấm mồ hôi. Đội vô địch mùa này với bộ áo MiQ!',
     stars: 5,
     season: 'Mùa giải 2024–25',
-    accentColor: '#10B981',
+    accentColor: '#E8590C',
   },
   {
     id: 2,
@@ -122,7 +122,7 @@ const TeamTestimonials = () => {
     const el = scrollRef.current;
     if (!el) return;
     let last = null;
-    const SPEED = 0.3;
+    const SPEED = 0.5;
     const step = (ts) => {
       if (last !== null && !pausedRef.current) {
         el.scrollLeft += SPEED * (ts - last);

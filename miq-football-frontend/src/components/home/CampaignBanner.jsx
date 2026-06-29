@@ -145,7 +145,7 @@ const CampaignBanner = () => (
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, #064E3B 0%, #065F46 40%, #047857 65%, #0A0A0B 100%)',
+          background: 'linear-gradient(135deg, #18181B 0%, #27272A 40%, #3F3F46 65%, #0A0A0B 100%)',
         }}
       />
       <PitchLines />
@@ -166,14 +166,14 @@ const CampaignBanner = () => (
           <div
             className="w-64 h-64 xl:w-80 xl:h-80 rounded-full flex items-center justify-center"
             style={{
-              background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0.05) 60%, transparent 80%)',
-              boxShadow: '0 0 100px rgba(16,185,129,0.25)',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 60%, transparent 80%)',
+              boxShadow: '0 0 100px rgba(0,0,0,0.40)',
             }}
           >
             <img
               src="/boot.png"
               alt="Street to Pitch Collection 2026"
-              className="w-52 h-52 xl:w-72 xl:h-72 object-contain drop-shadow-[0_0_40px_rgba(16,185,129,0.5)]"
+              className="w-52 h-52 xl:w-72 xl:h-72 object-contain drop-shadow-[0_0_40px_rgba(0,0,0,0.6)]"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>

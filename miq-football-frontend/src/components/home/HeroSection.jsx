@@ -48,19 +48,19 @@ const EnergyRings = () => {
   >
     <defs>
       <linearGradient id="er1" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stopColor="#10B981" stopOpacity="0" />
-        <stop offset="45%"  stopColor="#10B981" stopOpacity="0.95" />
-        <stop offset="100%" stopColor="#34D399" stopOpacity="0.12" />
+        <stop offset="0%"   stopColor="#FB923C" stopOpacity="0" />
+        <stop offset="45%"  stopColor="#E8590C" stopOpacity="0.90" />
+        <stop offset="100%" stopColor="#FDBA74" stopOpacity="0.12" />
       </linearGradient>
       <linearGradient id="er2" x1="100%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%"   stopColor="#00C853" stopOpacity="0" />
-        <stop offset="50%"  stopColor="#00C853" stopOpacity="0.75" />
-        <stop offset="100%" stopColor="#10B981" stopOpacity="0.08" />
+        <stop offset="0%"   stopColor="#C2410C" stopOpacity="0" />
+        <stop offset="50%"  stopColor="#EA580C" stopOpacity="0.70" />
+        <stop offset="100%" stopColor="#FB923C" stopOpacity="0.08" />
       </linearGradient>
       <linearGradient id="er3" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%"   stopColor="#059669" stopOpacity="0" />
-        <stop offset="60%"  stopColor="#059669" stopOpacity="0.80" />
-        <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+        <stop offset="0%"   stopColor="#9A3412" stopOpacity="0" />
+        <stop offset="60%"  stopColor="#C2410C" stopOpacity="0.75" />
+        <stop offset="100%" stopColor="#EA580C" stopOpacity="0" />
       </linearGradient>
     </defs>
 
@@ -109,7 +109,7 @@ const HeroSection = () => {
       const rect = el.getBoundingClientRect();
       const x = ((e.clientX - rect.left)  / rect.width)  * 100;
       const y = ((e.clientY - rect.top)   / rect.height) * 100;
-      div.style.background = `radial-gradient(circle 450px at ${x}% ${y}%, rgba(16,185,129,0.13) 0%, transparent 65%)`;
+      div.style.background = `radial-gradient(circle 450px at ${x}% ${y}%, rgba(255,255,255,0.06) 0%, transparent 65%)`;
     });
   }, []);
 
@@ -161,7 +161,7 @@ const HeroSection = () => {
         <div
           ref={spotlightElemRef}
           className="absolute inset-0 pointer-events-none z-[1]"
-          style={{ background: 'radial-gradient(circle 450px at 65% 45%, rgba(16,185,129,0.13) 0%, transparent 65%)' }}
+          style={{ background: 'radial-gradient(circle 450px at 65% 45%, rgba(255,255,255,0.06) 0%, transparent 65%)' }}
         />
 
         {/* ── Main 12-col grid ──────────────────────────────────────── */}
@@ -209,7 +209,7 @@ const HeroSection = () => {
                     letterSpacing: '-0.01em',
                     paddingTop: '0.25em',
                     paddingBottom: '0.05em',
-                    background: 'linear-gradient(135deg, #10B981 0%, #34D399 40%, #D4AF37 70%, #10B981 100%)',
+                    background: 'linear-gradient(135deg, #EA580C 0%, #FB923C 40%, #D4AF37 70%, #E8590C 100%)',
                     backgroundSize: '200% auto',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -227,7 +227,7 @@ const HeroSection = () => {
                   style={{
                     lineHeight: 1.2,
                     letterSpacing: '-0.01em',
-                    textShadow: '0 0 80px rgba(16,185,129,0.3)',
+                    textShadow: '0 0 80px rgba(0,0,0,0.12)',
                   }}
                 >
                   {cfg.line2 || t('heroBig2')}
@@ -280,7 +280,7 @@ const HeroSection = () => {
                 >
                   <Link
                     to="/products"
-                    className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-primary to-emerald-600 text-white font-bold uppercase tracking-wider px-10 py-5 rounded-xl transition-all duration-300 hover:shadow-[0_0_60px_rgba(16,185,129,0.6)] overflow-hidden"
+                    className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-white font-bold uppercase tracking-wider px-10 py-5 rounded-xl transition-all duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden"
                   >
                     <span className="absolute inset-0 bg-white/0 group-hover:bg-white/[0.08] transition-colors duration-300 rounded-xl" />
                     <span className="relative">{cfg.cta1Label || t('heroCTA1')}</span>
@@ -294,7 +294,7 @@ const HeroSection = () => {
 
                 {/* Secondary: Xem bộ sưu tập */}
                 <Link
-                  to={cfg.cta2Link || '/products?category=kits'}
+                  to={cfg.cta2Link || '/collections/miq'}
                   className="group inline-flex items-center gap-2 border-2 border-text-primary/20 text-text-primary font-bold uppercase tracking-wider px-8 py-5 rounded-xl transition-all duration-200 hover:border-primary hover:text-primary"
                 >
                   <LayoutGrid className="w-4 h-4 group-hover:text-primary transition-colors" />
@@ -331,7 +331,7 @@ const HeroSection = () => {
               <div
                 className="absolute w-[560px] h-[560px] rounded-full blur-3xl pointer-events-none"
                 style={{
-                  background: 'radial-gradient(circle, rgba(16,185,129,0.34) 0%, rgba(16,185,129,0.12) 42%, transparent 70%)',
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 42%, transparent 70%)',
                   animation:  'glow-pulse 3.2s ease-in-out infinite',
                 }}
               />
@@ -367,7 +367,7 @@ const HeroSection = () => {
                     alt="Featured shoe"
                     className="w-full h-full object-contain"
                     style={{
-                      filter: 'drop-shadow(0 36px 72px rgba(16,185,129,0.68)) drop-shadow(0 12px 28px rgba(0,0,0,0.36))',
+                      filter: 'drop-shadow(0 36px 72px rgba(0,0,0,0.50)) drop-shadow(0 12px 28px rgba(0,0,0,0.36))',
                     }}
                   />
                 ) : (
@@ -376,7 +376,7 @@ const HeroSection = () => {
                     fps={30}
                     width="100%"
                     height="100%"
-                    filter="drop-shadow(0 36px 72px rgba(16,185,129,0.68)) drop-shadow(0 12px 28px rgba(0,0,0,0.36))"
+                    filter="drop-shadow(0 36px 72px rgba(0,0,0,0.50)) drop-shadow(0 12px 28px rgba(0,0,0,0.36))"
                   />
                 )}
                 {/* Hint label */}

@@ -604,7 +604,7 @@ const ProductListing = () => {
               <FilterPanel filters={filters} setFilter={setFilter} isFetching={isFetching} isLoading={isLoading} categoryParam={categoryParam} tagParam={tagParam} setUrlCategory={setUrlCategory} subCategories={SUB_CATEGORIES} pricePresets={PRICE_PRESETS} />
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="mt-8 w-full py-3 bg-primary hover:bg-emerald-400 text-white font-bold rounded-xl transition"
+                className="mt-8 w-full py-3 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl transition"
               >
                 Áp dụng{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
               </button>

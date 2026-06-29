@@ -24,7 +24,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const stripeAppearance = {
   theme: 'night',
   variables: {
-    colorPrimary: '#10B981',
+    colorPrimary: '#E8590C',
     colorBackground: '#18181b',
     colorText: '#f3f4f6',
     colorDanger: '#ef4444',

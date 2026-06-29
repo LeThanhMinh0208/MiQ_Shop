@@ -21,7 +21,7 @@ const MOCK_ARTICLES = [
     category: 'Sản phẩm mới',
     date: '2025-06-01',
     status: 'published',
-    image: 'https://placehold.co/400x200/10B981/ffffff?text=BST+2025',
+    image: 'https://placehold.co/400x200/27272A/A1A1AA?text=BST+2025',
     content: 'Bộ sưu tập áo đấu mùa giải 2025/26 chính thức ra mắt với thiết kế đột phá...',
   },
   {

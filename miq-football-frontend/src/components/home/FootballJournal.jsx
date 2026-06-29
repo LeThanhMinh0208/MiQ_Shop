@@ -5,10 +5,10 @@ import { Calendar, BookOpen, ArrowRight } from 'lucide-react';
 const ARTICLES = [
   {
     id: 1,
-    thumbnail: 'https://placehold.co/600x380/141416/10B981?text=Gear+Review',
+    thumbnail: 'https://placehold.co/600x380/141416/A1A1AA?text=Gear+Review',
     date: '02 Jun 2026',
     category: 'Gear Review',
-    categoryColor: '#10B981',
+    categoryColor: '#E8590C',
     title: 'Chọn Giày Đá Bóng Nhân Tạo Đúng Cách — Không Chỉ Là Style',
     excerpt: 'Sân cỏ nhân tạo đòi hỏi đế giày khác hoàn toàn. Chúng tôi test 8 mẫu giày phổ biến nhất 2026 và đây là kết quả thực tế.',
     readTime: '5 phút đọc',
@@ -23,7 +23,7 @@ const ARTICLES = [
     title: '5 Bài Tập Kỹ Thuật Dứt Điểm Chuẩn Premier League',
     excerpt: 'Kỹ thuật dứt điểm không phải thiên bẩm. Với 5 bài tập này, bất kỳ ai cũng có thể nâng tỷ lệ chuyển hóa cơ hội trong 4 tuần.',
     readTime: '7 phút đọc',
-    to: '/products?category=trang-phuc-the-thao',
+    to: '/products',
   },
   {
     id: 3,
@@ -34,7 +34,7 @@ const ARTICLES = [
     title: 'Xu Hướng Đồng Phục Đội Bóng 2026 — Bold, Dark & Neon',
     excerpt: 'Từ gradient tối đến neon accent — các đội bóng phong trào đang mặc đẹp như CLB chuyên nghiệp. Top 10 thiết kế viral nhất năm.',
     readTime: '4 phút đọc',
-    to: '/products?category=ao-dau-clb',
+    to: '/products',
   },
 ];
 

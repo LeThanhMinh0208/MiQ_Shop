@@ -100,7 +100,7 @@ const Wishlist = () => {
                     className="bg-bg-elevated rounded-2xl border border-surface-border overflow-hidden group hover:shadow-lg transition-shadow"
                   >
                     <Link to={`/products/${product._id}`} className="block relative">
-                      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 aspect-square p-4 relative overflow-hidden">
+                      <div className="bg-gradient-to-br from-zinc-50 to-zinc-100 aspect-square p-4 relative overflow-hidden">
                         {product.salePrice && (
                           <span className="absolute top-2 left-2 z-10 bg-primary text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">
                             SALE

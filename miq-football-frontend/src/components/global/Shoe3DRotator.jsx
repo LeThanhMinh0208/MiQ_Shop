@@ -36,7 +36,7 @@ const Shoe3DRotator = ({
   width         = 500,
   height        = 400,
   className     = '',
-  filter        = 'drop-shadow(0 28px 56px rgba(16,185,129,0.6)) drop-shadow(0 8px 20px rgba(0,0,0,0.3))',
+  filter        = 'drop-shadow(0 28px 56px rgba(0,0,0,0.55)) drop-shadow(0 8px 20px rgba(0,0,0,0.3))',
   onFrameChange,
 }) => {
   const [frame,     setFrame]     = useState(startFrame % TOTAL);

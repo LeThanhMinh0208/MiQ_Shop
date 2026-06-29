@@ -19,7 +19,7 @@ import { adminGetSegmentation } from '../../services/adminService.js';
 import { formatCurrency } from '../../utils/formatCurrency.js';
 
 // ─── Colors ─────────────────────────────────────────────────────────────────
-const PRIMARY = '#10B981';
+const PRIMARY = '#E8590C';
 const COLORS = {
   pending: '#F59E0B',
   confirmed: '#3B82F6',

@@ -8,7 +8,7 @@ const STEPS = [
     icon: Palette,
     title: 'Chọn Thiết Kế',
     desc: 'Chọn từ 50+ mẫu thiết kế có sẵn hoặc gửi file thiết kế riêng của đội bạn.',
-    accent: '#10B981',
+    accent: '#E8590C',
   },
   {
     step: '02',
@@ -113,7 +113,7 @@ const CustomJerseyPrinting = () => (
       className="absolute inset-0 opacity-[0.025] pointer-events-none"
       style={{
         backgroundImage:
-          'linear-gradient(#10B981 1px, transparent 1px), linear-gradient(90deg, #10B981 1px, transparent 1px)',
+          'linear-gradient(#E8590C 1px, transparent 1px), linear-gradient(90deg, #E8590C 1px, transparent 1px)',
         backgroundSize: '44px 44px',
       }}
     />

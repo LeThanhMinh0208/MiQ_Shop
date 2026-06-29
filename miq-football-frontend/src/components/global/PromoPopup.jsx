@@ -74,7 +74,7 @@ const PromoPopup = () => {
                   <br />
                   <span
                     style={{
-                      background: 'linear-gradient(135deg, #10B981, #34D399, #D4AF37)',
+                      background: 'linear-gradient(135deg, #EA580C, #FB923C, #D4AF37)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -92,7 +92,7 @@ const PromoPopup = () => {
                   <Link
                     to="/products?sort=newest"
                     onClick={close}
-                    className="flex items-center gap-2 bg-primary text-white font-bold uppercase tracking-wide px-8 py-3.5 rounded-xl hover:bg-primary/90 transition-all hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] text-sm"
+                    className="flex items-center gap-2 bg-primary text-white font-bold uppercase tracking-wide px-8 py-3.5 rounded-xl hover:bg-primary/90 transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.35)] text-sm"
                   >
                     Khám phá ngay
                   </Link>

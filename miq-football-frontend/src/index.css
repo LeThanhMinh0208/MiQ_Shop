@@ -21,6 +21,11 @@
   --rgb-text-secondary:  63  63  70;
   --rgb-text-muted:      107 107 116;
   --rgb-text-inverse:    250 250 250;
+
+  /* Primary — burnt orange, same in both modes */
+  --rgb-primary: 232 89 12;
+  /* Foreground color ON primary background: white always */
+  --primary-fg: #FFFFFF;
 }
 
 /* ── Theme tokens — dark ─────────────────────────────────────────────────── */
@@ -39,17 +44,24 @@ html.dark {
   --rgb-text-secondary:  161 161 170;
   --rgb-text-muted:      140 140 148;
   --rgb-text-inverse:    10  10  11;
+
+  /* Primary — burnt orange, same as light mode */
+  --rgb-primary: 232 89 12;
+  /* Foreground color ON primary background: white always */
+  --primary-fg: #FFFFFF;
 }
 
-/* ── Dynamic primary color (driven by hero product accentColor) ── */
+/* ── Dynamic primary color (driven by hero product accentColor or collection) ── */
 :root {
-  --primary-dynamic: #10B981;
-  --primary-rgb: 16, 185, 129;
+  --primary-dynamic: #E8590C;
+  --primary-rgb: 232, 89, 12;
 }
 .text-primary-dynamic   { color: var(--primary-dynamic); }
 .bg-primary-dynamic     { background-color: var(--primary-dynamic); }
 .border-primary-dynamic { border-color: var(--primary-dynamic); }
-.shadow-primary-dynamic { box-shadow: 0 0 30px rgba(var(--primary-rgb), 0.4); }
+.shadow-primary-dynamic { box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.2); }
+
+/* Orange primary reads white text in both modes — no per-theme inversion needed */
 
 /* ============================================================
    BASE LAYER
@@ -85,9 +97,9 @@ html.dark {
     letter-spacing: var(--tracking-display);
   }
 
-  /* Focus rings — accessible, beautiful */
+  /* Focus rings — charcoal in light, silver in dark */
   :focus-visible {
-    outline: 2px solid #10B981;
+    outline: 2px solid rgb(var(--rgb-primary));
     outline-offset: 3px;
     border-radius: 4px;
   }
@@ -103,17 +115,13 @@ html.dark {
 }
 
 /* ── Performance hints ───────────────────────────────────────────────────── */
-/* Isolate layout/paint for major section wrappers */
 section, .section-contain {
   contain: layout style;
 }
 
 /* ── Fullscreen snap scroll (Home page only, desktop) ────────────────────── */
-/* Snap container is a div inside Home.jsx, not the html element.            */
-/* This way the navbar sits above the snap container naturally — no overlap. */
 @media (min-width: 1024px) {
   .snap-home-container {
-    /* h-full fills the flex-1 <main> exactly, so no navbar overlap */
     height: 100%;
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
@@ -122,7 +130,7 @@ section, .section-contain {
   .snap-home-container::-webkit-scrollbar { display: none; }
 }
 
-/* ── CSS keyframes for GPU-composited infinite animations ────────────────── */
+/* ── CSS keyframes ────────────────────────────────────────────────────────── */
 @keyframes ring-cw    { to { transform: rotate(360deg);  } }
 @keyframes ring-ccw   { to { transform: rotate(-360deg); } }
 @keyframes ring-rock  { 0%,100% { transform: rotate(15deg); } 50% { transform: rotate(27deg); } }
@@ -157,18 +165,15 @@ section, .section-contain {
   0%, 100% { transform: translateY(0)     scaleX(1); }
   50%       { transform: translateY(-20px) scaleX(1.012); }
 }
-/* Hero shoe float — matches the former Framer Motion y:[0,-22,0] rotate:[-1.5,1.5,-1.5] */
 @keyframes shoe-levitate {
   0%, 100% { transform: translateY(0)     rotate(-1.5deg); }
   50%       { transform: translateY(-22px) rotate(1.5deg); }
 }
-/* Scroll indicator dot bounce — replaces JS motion.rect infinite */
 @keyframes scroll-dot {
   0%, 100% { transform: translateY(0);  }
   50%       { transform: translateY(9px); }
 }
 /* ── 8 Hover Effect Varieties ───────────────────────────────────────────── */
-/* 2 — Shimmer: light sweeps across surface on hover */
 @keyframes shimmer-sweep {
   0%   { transform: translateX(-120%); }
   100% { transform: translateX(250%); }
@@ -186,18 +191,18 @@ section, .section-contain {
 }
 .hover-shimmer:hover::after { animation: shimmer-sweep 0.65s ease forwards; }
 
-/* 3 — Glow ring: neon emerald border + outer haze */
+/* 3 — Glow ring: orange border + outer haze */
 .hover-glow { transition: box-shadow 0.3s ease, transform 0.25s ease; }
 .hover-glow:hover {
-  box-shadow: 0 0 0 2px #10B981, 0 0 14px rgba(16,185,129,0.55), 0 0 28px rgba(16,185,129,0.2);
+  box-shadow: 0 0 0 2px rgb(var(--rgb-primary)), 0 0 14px rgba(232,89,12,0.25), 0 0 28px rgba(232,89,12,0.12);
   transform: scale(1.09);
 }
 
-/* 6 — Border flash: glowing outline materialises on hover */
+/* 6 — Border flash: orange outline on hover */
 .hover-border-flash { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
 .hover-border-flash:hover {
-  border-color: rgba(16,185,129,0.45);
-  box-shadow: 0 0 0 1px rgba(16,185,129,0.12), inset 0 0 28px rgba(16,185,129,0.05),
+  border-color: rgba(232,89,12,0.40);
+  box-shadow: 0 0 0 1px rgba(232,89,12,0.12), inset 0 0 28px rgba(232,89,12,0.05),
               0 24px 60px rgba(0,0,0,0.35);
 }
 
@@ -209,12 +214,12 @@ section, .section-contain {
   /* ── Pedestal 3D ────────────────────────────────────────── */
   .pedestal {
     position: relative;
-    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+    background: linear-gradient(135deg, #F4F4F5 0%, #E4E4E7 100%);
     border-radius: 1rem;
-    border: 1.5px solid rgba(16,185,129,0.2);
+    border: 1.5px solid rgba(28,28,30,0.12);
     box-shadow:
       0 1px 0 rgba(255,255,255,0.8) inset,
-      0 20px 40px -10px rgba(16,185,129,0.25),
+      0 20px 40px -10px rgba(0,0,0,0.18),
       0 4px 8px rgba(0,0,0,0.04);
   }
 
@@ -224,7 +229,7 @@ section, .section-contain {
     border-radius: 1rem;
     opacity: 0;
     filter: blur(20px);
-    background: linear-gradient(135deg, rgba(16,185,129,0.4), rgba(52,211,153,0.3));
+    background: linear-gradient(135deg, rgba(232,89,12,0.25), rgba(194,65,12,0.15));
     transition: opacity 0.4s ease;
   }
 
@@ -234,15 +239,15 @@ section, .section-contain {
   .energy-ring {
     position: absolute;
     border-radius: 9999px;
-    border: 1.5px solid rgba(16,185,129,0.35);
+    border: 1.5px solid rgba(232,89,12,0.25);
   }
 
   /* ── Buttons ────────────────────────────────────────────── */
   .btn-primary {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: #111827;
+    background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%);
+    color: #FFFFFF;
     font-weight: 600;
     font-family: 'Inter', sans-serif;
     text-transform: uppercase;
@@ -250,7 +255,7 @@ section, .section-contain {
     font-size: 0.8125rem;
     padding: 0.75rem 2rem;
     border-radius: var(--r-md);
-    box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    box-shadow: 0 4px 14px rgba(232,89,12,0.35);
     transition: all 200ms var(--ease-smooth);
     display: inline-flex;
     align-items: center;
@@ -264,15 +269,15 @@ section, .section-contain {
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #059669;
-    color: #111827;
-    box-shadow: 0 6px 20px rgba(16,185,129,0.5);
+    background: #C2410C;
+    color: #FFFFFF;
+    box-shadow: 0 6px 20px rgba(232,89,12,0.50);
     transform: translateY(-1px);
   }
 
   .btn-primary:active:not(:disabled) {
     transform: translateY(0) scale(0.98);
-    box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+    box-shadow: 0 2px 8px rgba(232,89,12,0.25);
   }
 
   .btn-primary:disabled {
@@ -283,8 +288,8 @@ section, .section-contain {
   .btn-outline {
     position: relative;
     overflow: hidden;
-    border: 1.5px solid #10B981;
-    color: #10B981;
+    border: 1.5px solid rgb(var(--rgb-primary));
+    color: rgb(var(--rgb-primary));
     font-weight: 600;
     font-family: 'Inter', sans-serif;
     text-transform: uppercase;
@@ -302,11 +307,13 @@ section, .section-contain {
   }
 
   .btn-outline:hover:not(:disabled) {
-    background: #10B981;
-    color: #111827;
-    box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    background: rgb(var(--rgb-primary));
+    color: var(--primary-fg, #FFFFFF);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
     transform: translateY(-1px);
   }
+
+  /* Orange is same in both modes — white text always applies on hover */
 
   .btn-outline:active:not(:disabled) {
     transform: translateY(0) scale(0.98);
@@ -409,8 +416,8 @@ section, .section-contain {
 
   .input-floating input:focus,
   .input-floating textarea:focus {
-    border-color: #10B981;
-    box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+    border-color: rgb(var(--rgb-primary));
+    box-shadow: 0 0 0 3px rgba(232,89,12,0.15);
   }
 
   .input-floating label {
@@ -432,7 +439,7 @@ section, .section-contain {
   .input-floating textarea:not(:placeholder-shown) ~ label {
     top: 0;
     font-size: 0.7rem;
-    color: #10B981;
+    color: rgb(var(--rgb-primary));
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -469,15 +476,15 @@ section, .section-contain {
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgb(var(--rgb-bg-raised)); }
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #10B981, #064E3B);
+    background: linear-gradient(180deg, #EA580C, #C2410C);
     border-radius: 999px;
   }
-  ::-webkit-scrollbar-thumb:hover { background: #10B981; }
+  ::-webkit-scrollbar-thumb:hover { background: #9A3412; }
 
   /* ── Selection ───────────────────────────────────────────── */
   ::selection {
-    background: rgba(16,185,129,0.2);
-    color: #065F46;
+    background: rgba(232,89,12,0.18);
+    color: rgb(var(--rgb-text-primary));
   }
 
   /* ── Noise texture overlay ────────────────────────────────── */
@@ -510,7 +517,7 @@ section, .section-contain {
     left: 0;
     z-index: 10000;
     padding: 10px 20px;
-    background: #10B981;
+    background: #1C1C1E;
     color: white;
     font-weight: 700;
     font-size: 0.875rem;
@@ -538,7 +545,7 @@ section, .section-contain {
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(16,185,129,0.25), rgba(16,185,129,0));
+    background: linear-gradient(135deg, rgba(232,89,12,0.20), rgba(232,89,12,0));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -550,8 +557,8 @@ section, .section-contain {
     transform: translateY(-4px);
     box-shadow:
       0 20px 60px -10px rgba(0,0,0,0.15),
-      0 0 40px -5px rgba(16,185,129,0.25);
-    border-color: rgba(16,185,129,0.3);
+      0 0 40px -5px rgba(232,89,12,0.12);
+    border-color: rgba(232,89,12,0.25);
   }
 
   /* ── Luxury button ───────────────────────────────────────────── */
@@ -562,7 +569,7 @@ section, .section-contain {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%);
     color: white;
     padding: 0.875rem 2rem;
     border-radius: 8px;
@@ -582,13 +589,13 @@ section, .section-contain {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #00FFAB 0%, #10B981 100%);
+    background: linear-gradient(135deg, #C2410C 0%, #9A3412 100%);
     opacity: 0;
     transition: opacity 0.4s;
   }
   .btn-luxury:hover::before { opacity: 1; }
   .btn-luxury:hover {
-    box-shadow: 0 0 60px rgba(16,185,129,0.5);
+    box-shadow: 0 0 40px rgba(232,89,12,0.45);
     transform: translateY(-2px);
   }
   .btn-luxury:active { transform: translateY(0) scale(0.98); }
@@ -608,11 +615,11 @@ section, .section-contain {
     transform: translateX(-50%);
     width: 60px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #10B981, transparent);
+    background: linear-gradient(90deg, transparent, rgb(var(--rgb-primary)), transparent);
   }
 
   /* ── Glow text ───────────────────────────────────────────────── */
-  .text-glow { text-shadow: 0 0 30px rgba(16,185,129,0.5); }
+  .text-glow { text-shadow: 0 0 30px rgba(232,89,12,0.40); }
 
   /* ── Ripple button ───────────────────────────────────────────── */
   .btn-ripple { position: relative; overflow: hidden; }
@@ -637,7 +644,7 @@ section, .section-contain {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(16,185,129,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(232,89,12,0.30), transparent);
   }
 }
 
@@ -652,17 +659,17 @@ section, .section-contain {
     color: transparent;
   }
 
-  /* Gradient text */
+  /* Gradient text — burnt orange */
   .gradient-text {
-    background: linear-gradient(135deg, #10B981, #059669);
+    background: linear-gradient(135deg, #EA580C, #C2410C);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  /* Luxury gradient text — gold → emerald → neon, animated */
+  /* Luxury gradient text — gold → orange */
   .text-luxury-gradient {
-    background: linear-gradient(135deg, #D4AF37 0%, #10B981 50%, #00FFAB 100%);
+    background: linear-gradient(135deg, #D4AF37 0%, #EA580C 50%, #C2410C 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -674,10 +681,8 @@ section, .section-contain {
   .will-change-opacity   { will-change: opacity; }
   .will-change-auto      { will-change: auto; }
 
-  /* GPU acceleration for animated elements */
   .gpu { transform: translateZ(0); }
 
-  /* Truncate lines */
   .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
   .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }

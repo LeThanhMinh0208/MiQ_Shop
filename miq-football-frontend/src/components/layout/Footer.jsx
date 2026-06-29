@@ -51,7 +51,7 @@ const PayVNPay = () => (
   <svg viewBox="0 0 48 30" className="h-5 w-auto"><rect width="48" height="30" rx="4" fill="#002B7F"/><text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="8.5" fill="#FFF">VNPAY</text></svg>
 );
 const PayCOD = () => (
-  <svg viewBox="0 0 48 30" className="h-5 w-auto"><rect width="48" height="30" rx="4" fill="#1F2937"/><text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="9" fill="#10B981">COD</text></svg>
+  <svg viewBox="0 0 48 30" className="h-5 w-auto"><rect width="48" height="30" rx="4" fill="#1F2937"/><text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="9" fill="#FB923C">COD</text></svg>
 );
 const PayBank = () => (
   <svg viewBox="0 0 48 30" className="h-5 w-auto"><rect width="48" height="30" rx="4" fill="#0F4C81"/><text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="7" fill="#FFF">Chuyển</text><text x="50%" y="72%" textAnchor="middle" dominantBaseline="middle" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="7" fill="#FFF">Khoản</text></svg>
@@ -173,7 +173,7 @@ const Footer = () => {
             <p
               className="text-xs font-bold uppercase tracking-[0.2em] mb-5"
               style={{
-                background: 'linear-gradient(90deg, #10B981, #6ee7b7, #10B981)',
+                background: 'linear-gradient(90deg, #C2410C, #FB923C, #C2410C)',
                 backgroundSize: '200% auto',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',

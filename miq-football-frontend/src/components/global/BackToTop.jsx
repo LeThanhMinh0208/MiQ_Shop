@@ -37,7 +37,7 @@ const BackToTop = () => {
           exit={{ opacity: 0, scale: 0.8, y: 8 }}
           transition={{ duration: 0.2 }}
           onClick={scrollToTop}
-          className="fixed bottom-24 right-5 z-50 w-11 h-11 bg-primary hover:bg-emerald-400 text-white rounded-full flex items-center justify-center shadow-neon transition-colors duration-200"
+          className="fixed bottom-24 right-5 z-50 w-11 h-11 bg-primary hover:bg-primary/80 text-white rounded-full flex items-center justify-center shadow-neon transition-colors duration-200"
           aria-label="Về đầu trang"
         >
           <ArrowUp className="w-5 h-5" />

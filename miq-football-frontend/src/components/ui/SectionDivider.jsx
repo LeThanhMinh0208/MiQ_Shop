@@ -7,9 +7,9 @@ const SectionDivider = ({ flip = false }) => (
     <svg viewBox="0 0 1440 32" preserveAspectRatio="none" className="w-full h-full">
       <defs>
         <linearGradient id="divGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#10B981" stopOpacity="0.12" />
-          <stop offset="50%"  stopColor="#10B981" stopOpacity="0.04" />
-          <stop offset="100%" stopColor="#10B981" stopOpacity="0.10" />
+          <stop offset="0%"   stopColor="#E8590C" stopOpacity="0.12" />
+          <stop offset="50%"  stopColor="#E8590C" stopOpacity="0.04" />
+          <stop offset="100%" stopColor="#E8590C" stopOpacity="0.10" />
         </linearGradient>
       </defs>
       <path d="M0 32 L1440 0 L1440 32 Z" fill="url(#divGrad)" />
