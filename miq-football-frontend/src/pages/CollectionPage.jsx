@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -19,7 +19,16 @@ const BRAND_FALLBACK = {
   umbro:         { displayName: 'Umbro',         brand: 'Umbro',       tagline: 'The Game Lives Here', description: 'Umbro — thương hiệu Anh quốc với lịch sử lâu đời trong bóng đá. Những chiếc áo đấu huyền thoại.', accentColor: '#E30613', slides: [{ url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1400&q=80', caption: 'Umbro Classic Collection' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1516478177764-9fe5bd7e9717?w=800&q=80', title: 'Umbro Team Kit', desc: 'Đồng phục thi đấu' }] },
 };
 
-// ── Hero Slideshow ─────────────────────────────────────────────────────────────
+// ── Dark background palette for carousel — shifts per active product ──────────
+const HERO_BG_COLORS = [
+  '#0c0c14', // deep blue-purple
+  '#14080c', // deep burgundy
+  '#08100c', // deep forest
+  '#100c08', // deep umber
+  '#0a0c14', // deep navy
+];
+
+// ── Old slideshow — kept as fallback for N=0 / loading state ─────────────────
 const HeroSlideshow = ({ slides, accentColor }) => {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef(null);
@@ -86,7 +95,7 @@ const HeroSlideshow = ({ slides, accentColor }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className="text-white text-lg md:text-2xl font-bold drop-shadow-lg"
+              className="text-white font-display text-lg md:text-2xl font-bold drop-shadow-lg"
             >
               {slides[current].caption}
             </motion.p>
@@ -123,6 +132,355 @@ const HeroSlideshow = ({ slides, accentColor }) => {
           </div>
         </>
       )}
+    </div>
+  );
+};
+
+// ── 3D Product Carousel — replaces HeroSlideshow ──────────────────────────────
+const ProductCarousel3D = ({ products, prodLoading, brandName, accentColor, fallbackSlides }) => {
+  const navigate = useNavigate();
+
+  // Pad to ≥4 so carousel math is always clean.
+  // N < 4 → repeat products to fill 4 slots.
+  // N == 0 → handled by early return below.
+  const items = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    if (products.length < 4) {
+      return Array.from({ length: 4 }, (_, i) => products[i % products.length]);
+    }
+    return products;
+  }, [products]);
+
+  const N = items.length;
+
+  const [active,      setActive]   = useState(0);
+  const [isAnimating, setIsAnim]   = useState(false);
+  const [bgColor,     setBgColor]  = useState(HERO_BG_COLORS[0]);
+  const [isMobile,    setIsMobile] = useState(
+    typeof window !== 'undefined' && window.innerWidth < 640
+  );
+
+  // Detect prefers-reduced-motion once at mount
+  const reducedMotion = useRef(
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ).current;
+
+  // Responsive listener
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  // Reset position when the product list changes (brand switch)
+  useEffect(() => {
+    setActive(0);
+    setBgColor(HERO_BG_COLORS[0]);
+  }, [items]);
+
+  // ── All hooks called — early returns are safe below ──────────────────────
+
+  // While products are loading or there are none, fall back to the old slideshow
+  if (prodLoading || N === 0) {
+    return <HeroSlideshow slides={fallbackSlides || []} accentColor={accentColor} />;
+  }
+
+  // ── Slot indices ─────────────────────────────────────────────────────────
+  const slots = {
+    center: active,
+    right:  (active + 1) % N,
+    back:   (active + 2) % N,
+    left:   (active - 1 + N) % N,
+  };
+
+  const getRole = (idx) => {
+    if (idx === slots.center) return 'center';
+    if (idx === slots.left)   return 'left';
+    if (idx === slots.right)  return 'right';
+    if (idx === slots.back)   return 'back';
+    return 'hidden';
+  };
+
+  // ── Position/style tables for desktop vs mobile ──────────────────────────
+  const ROLES = isMobile ? {
+    center: { x: 0,    s: 1.0,  z: 4, o: 1,    blur: 0   },
+    left:   { x: -148, s: 0.68, z: 3, o: 0.78, blur: 2   },
+    right:  { x:  148, s: 0.68, z: 3, o: 0.78, blur: 2   },
+    back:   { x: 0,    s: 0.46, z: 1, o: 0.22, blur: 7   },
+    hidden: { x: 0,    s: 0.18, z: 0, o: 0,    blur: 8   },
+  } : {
+    center: { x: 0,    s: 1.15, z: 4, o: 1,    blur: 0   },
+    left:   { x: -286, s: 0.76, z: 3, o: 0.8,  blur: 2.5 },
+    right:  { x:  286, s: 0.76, z: 3, o: 0.8,  blur: 2.5 },
+    back:   { x: 0,    s: 0.52, z: 1, o: 0.2,  blur: 8   },
+    hidden: { x: 0,    s: 0.18, z: 0, o: 0,    blur: 8   },
+  };
+
+  const ITEM_W   = isMobile ? 158 : 240;
+  const ITEM_H   = isMobile ? 198 : 300;
+  const STAGE_H  = isMobile ? 420 : 580;
+  const EASE_CSS = 'cubic-bezier(0.4,0,0.2,1)';
+  const DUR      = '650ms';
+  const TRANSITION = reducedMotion
+    ? 'none'
+    : `transform ${DUR} ${EASE_CSS}, opacity ${DUR} ${EASE_CSS}, filter ${DUR} ${EASE_CSS}`;
+
+  const centeredProduct = items[active];
+  const centeredImgUrl  = centeredProduct && centeredProduct.images && centeredProduct.images[0]
+    ? centeredProduct.images[0].url : '';
+
+  const rotate = (dir) => {
+    if (isAnimating) return;
+    const next = (active + dir + N) % N;
+    if (!reducedMotion) {
+      setIsAnim(true);
+      setTimeout(() => setIsAnim(false), 660);
+    }
+    setActive(next);
+    setBgColor(HERO_BG_COLORS[next % HERO_BG_COLORS.length]);
+  };
+
+  return (
+    <div
+      className="relative w-full overflow-hidden select-none"
+      style={{
+        height: `${STAGE_H}px`,
+        backgroundColor: bgColor,
+        transition: reducedMotion ? 'none' : `background-color ${DUR} ${EASE_CSS}`,
+      }}
+    >
+      {/* Giant ghost brand name — Oswald font, nearly transparent */}
+      <div
+        className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none"
+        aria-hidden="true"
+        style={{ zIndex: 0 }}
+      >
+        <span
+          className="font-display font-black uppercase text-white"
+          style={{
+            fontSize: isMobile ? '30vw' : '21vw',
+            opacity: 0.042,
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+            userSelect: 'none',
+          }}
+        >
+          {brandName}
+        </span>
+      </div>
+
+      {/* Radial accent glow behind center */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 0,
+          background: `radial-gradient(ellipse 55% 45% at 50% 52%, ${accentColor}1a 0%, transparent 68%)`,
+          transition: reducedMotion ? 'none' : `opacity ${DUR} ${EASE_CSS}`,
+        }}
+      />
+
+      {/* Brand label — top left */}
+      <div className="absolute top-5 left-5 md:left-10" style={{ zIndex: 30 }}>
+        <span
+          className="font-display text-[10px] font-bold uppercase tracking-[0.22em]"
+          style={{ color: accentColor }}
+        >
+          {brandName} Collection
+        </span>
+      </div>
+
+      {/* ── Carousel stage ─────────────────────────────────────────────── */}
+      <div className="absolute inset-0" style={{ zIndex: 10 }}>
+        {items.map((product, i) => {
+          const role = getRole(i);
+          const r    = ROLES[role] || ROLES.hidden;
+          const imgUrl = product && product.images && product.images[0]
+            ? product.images[0].url : '';
+
+          return (
+            <div
+              key={String(i)}
+              style={{
+                position: 'absolute',
+                left:   '50%',
+                top:    '50%',
+                width:  `${ITEM_W}px`,
+                height: `${ITEM_H}px`,
+                transform: `translate(-50%, -50%) translateX(${r.x}px) scale(${r.s})`,
+                zIndex:     r.z,
+                opacity:    r.o,
+                filter:    `blur(${r.blur}px)`,
+                transition: TRANSITION,
+                pointerEvents: r.o === 0 ? 'none' : 'auto',
+                willChange: 'transform, opacity, filter',
+              }}
+              onClick={role === 'center' && product._id
+                ? () => navigate('/products/' + product._id)
+                : undefined}
+            >
+              {/* Product card */}
+              <div
+                className="w-full h-full rounded-2xl overflow-hidden"
+                style={{
+                  cursor: role === 'center' ? 'pointer' : 'default',
+                  backgroundColor: '#1c1c1c',
+                  border: role === 'center'
+                    ? `2px solid ${accentColor}55`
+                    : '1px solid rgba(255,255,255,0.09)',
+                  boxShadow: role === 'center'
+                    ? `0 24px 64px rgba(0,0,0,0.65), 0 0 48px ${accentColor}1a`
+                    : '0 8px 28px rgba(0,0,0,0.45)',
+                  transition: reducedMotion ? 'none' : `border-color ${DUR} ${EASE_CSS}, box-shadow ${DUR} ${EASE_CSS}`,
+                }}
+              >
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={product.name || brandName}
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                    loading={i < 4 ? 'eager' : 'lazy'}
+                  />
+                ) : (
+                  /* Placeholder when product has no image */
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{
+                      background: `linear-gradient(135deg, ${accentColor}28 0%, ${accentColor}0c 100%)`,
+                    }}
+                  >
+                    <span
+                      className="font-display font-black uppercase text-center"
+                      style={{ color: accentColor, fontSize: 12, letterSpacing: '0.12em' }}
+                    >
+                      {brandName}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Center product info (name + price) ─────────────────────────── */}
+      {centeredProduct && (
+        <div
+          className="absolute left-1/2 pointer-events-none text-center"
+          style={{
+            bottom: isMobile ? '52px' : '62px',
+            zIndex: 30,
+            transform: 'translateX(-50%)',
+            width: isMobile ? '200px' : '280px',
+          }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {centeredProduct.name && (
+                <p className="font-display font-bold uppercase text-white text-xs md:text-sm drop-shadow-md tracking-wide line-clamp-1 mb-0.5">
+                  {centeredProduct.name}
+                </p>
+              )}
+              {centeredProduct.price != null && (
+                <p
+                  className="font-display font-bold text-sm md:text-base"
+                  style={{ color: accentColor }}
+                >
+                  {centeredProduct.price.toLocaleString('vi-VN')} ₫
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* ── Prev / Next arrows ─────────────────────────────────────────── */}
+      <button
+        onClick={() => rotate(-1)}
+        disabled={isAnimating}
+        aria-label="Sản phẩm trước"
+        className="absolute top-1/2 flex items-center justify-center"
+        style={{
+          left: isMobile ? '10px' : '28px',
+          zIndex: 30,
+          transform: 'translateY(-50%)',
+          width: 44, height: 44,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.10)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          color: 'white',
+          cursor: isAnimating ? 'default' : 'pointer',
+          opacity: isAnimating ? 0.45 : 1,
+          transition: 'opacity 200ms, background 200ms',
+        }}
+      >
+        <ChevronLeft style={{ width: 20, height: 20 }} />
+      </button>
+      <button
+        onClick={() => rotate(1)}
+        disabled={isAnimating}
+        aria-label="Sản phẩm tiếp"
+        className="absolute top-1/2 flex items-center justify-center"
+        style={{
+          right: isMobile ? '10px' : '28px',
+          zIndex: 30,
+          transform: 'translateY(-50%)',
+          width: 44, height: 44,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.10)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          color: 'white',
+          cursor: isAnimating ? 'default' : 'pointer',
+          opacity: isAnimating ? 0.45 : 1,
+          transition: 'opacity 200ms, background 200ms',
+        }}
+      >
+        <ChevronRight style={{ width: 20, height: 20 }} />
+      </button>
+
+      {/* ── Dot indicators ─────────────────────────────────────────────── */}
+      <div
+        className="absolute left-1/2 flex items-center gap-2"
+        style={{
+          bottom: isMobile ? '18px' : '22px',
+          zIndex: 30,
+          transform: 'translateX(-50%)',
+        }}
+      >
+        {items.map((_, dotIdx) => (
+          <button
+            key={dotIdx}
+            aria-label={`Sản phẩm ${dotIdx + 1}`}
+            onClick={() => {
+              if (!isAnimating) {
+                setActive(dotIdx);
+                setBgColor(HERO_BG_COLORS[dotIdx % HERO_BG_COLORS.length]);
+              }
+            }}
+            style={{
+              height: 6,
+              borderRadius: 3,
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              width: dotIdx === active ? 24 : 8,
+              backgroundColor: dotIdx === active
+                ? accentColor
+                : 'rgba(255,255,255,0.28)',
+              transition: reducedMotion ? 'none' : 'width 300ms, background-color 300ms',
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
@@ -194,8 +552,14 @@ const CollectionPage = () => {
 
   return (
     <div className="bg-bg-base min-h-screen">
-      {/* Section 1: Slideshow */}
-      <HeroSlideshow slides={slides} accentColor={accentColor} />
+      {/* Section 1: 3D Product Carousel (replaces old slideshow) */}
+      <ProductCarousel3D
+        products={products}
+        prodLoading={prodLoading}
+        brandName={brand}
+        accentColor={accentColor}
+        fallbackSlides={slides}
+      />
 
       {/* Brand header */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 py-12">
