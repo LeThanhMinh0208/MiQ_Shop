@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build:wards": "node scripts/build-vn-wards.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -12,6 +13,8 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@sentry/react": "^10.59.0",
     "@stripe/react-stripe-js": "^6.6.0",
     "@stripe/stripe-js": "^9.8.0",
@@ -27,6 +30,7 @@
     "react-window": "^2.2.7",
     "recharts": "^3.8.1",
     "socket.io-client": "^4.8.3",
+    "three": "^0.185.1",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.13"
   },
@@ -44,6 +48,7 @@
     "lighthouse": "^13.4.0",
     "postcss": "^8.5.14",
     "rollup-plugin-visualizer": "^7.0.1",
+    "sub-vn": "^0.0.2",
     "tailwindcss": "^3.4.19",
     "vite": "^8.0.10"
   }

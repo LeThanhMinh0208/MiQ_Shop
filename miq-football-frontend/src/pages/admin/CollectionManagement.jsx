@@ -24,7 +24,9 @@ const uploadToCloudinary = async (file) => {
   return { url: res.data.secure_url, publicId: res.data.public_id };
 };
 
-const BRAND_OPTIONS = ['MiQ', 'Nike', 'Adidas', 'Puma', 'New Balance', 'Mizuno', 'Umbro'];
+const BRAND_OPTIONS  = ['MiQ', 'Nike', 'Adidas', 'Puma', 'New Balance', 'Mizuno', 'Umbro'];
+const MODEL_OPTIONS  = ['boot1.glb', 'boot2.glb', 'boot3.glb', 'ball.glb'];
+const MODEL_LABELS   = { 'boot1.glb': 'Giày đá bóng 1', 'boot2.glb': 'Giày đá bóng 2', 'boot3.glb': 'Giày đá bóng 3', 'ball.glb': 'Quả bóng' };
 
 // ── Label + Input helpers ─────────────────────────────────────────────────────
 const FieldLabel = ({ children }) => (
@@ -282,21 +284,39 @@ const InfoTab = ({ form, setForm }) => (
       />
     </div>
 
-    <div>
-      <FieldLabel>Màu nhấn (hex)</FieldLabel>
-      <div className="flex items-center gap-3">
-        <input
-          type="color"
-          value={form.accentColor}
-          onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
-          className="w-11 h-11 rounded-xl border border-surface-border cursor-pointer bg-transparent p-1"
-        />
-        <TextInput
-          value={form.accentColor}
-          onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
-          placeholder="#E8590C"
-          className="flex-1"
-        />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <FieldLabel>Màu nhấn (hex)</FieldLabel>
+        <div className="flex items-center gap-3">
+          <input
+            type="color"
+            value={form.accentColor}
+            onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
+            className="w-11 h-11 rounded-xl border border-surface-border cursor-pointer bg-transparent p-1"
+          />
+          <TextInput
+            value={form.accentColor}
+            onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
+            placeholder="#E8590C"
+            className="flex-1"
+          />
+        </div>
+      </div>
+      <div>
+        <FieldLabel>Mô hình 3D</FieldLabel>
+        <div className="relative">
+          <select
+            value={form.model3d}
+            onChange={(e) => setForm((f) => ({ ...f, model3d: e.target.value }))}
+            className="w-full appearance-none px-4 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none text-sm pr-9"
+          >
+            {MODEL_OPTIONS.map((m) => (
+              <option key={m} value={m}>{MODEL_LABELS[m] || m}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+        </div>
+        <p className="text-[10px] text-text-muted mt-1">Model hiển thị ở đầu trang bộ sưu tập</p>
       </div>
     </div>
   </div>
@@ -308,11 +328,12 @@ const CollectionModal = ({ mode, collection, onClose }) => {
   const isEdit = mode === 'edit';
   const [tab, setTab]   = useState('info');
   const [form, setForm] = useState({
-    name:        collection?.name        || '',
-    brand:       collection?.brand       || '',
-    tagline:     collection?.tagline     || '',
-    description: collection?.description || '',
-    accentColor: collection?.accentColor || '#E8590C',
+    name:        collection && collection.name        ? collection.name        : '',
+    brand:       collection && collection.brand       ? collection.brand       : '',
+    tagline:     collection && collection.tagline     ? collection.tagline     : '',
+    description: collection && collection.description ? collection.description : '',
+    accentColor: collection && collection.accentColor ? collection.accentColor : '#E8590C',
+    model3d:     collection && collection.model3d     ? collection.model3d     : 'boot1.glb',
   });
   const [saving, setSaving] = useState(false);
 

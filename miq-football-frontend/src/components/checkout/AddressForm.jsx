@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getCities, getDistricts } from '../../data/vnAddress.js';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+import { getWards } from '../../data/vnWards.js';
 
 export const VN_PHONE_RE = /^0\d{9}$/;
 
@@ -56,15 +55,12 @@ const AddressForm = ({ data, onChange, phoneError, onPhoneBlur }) => {
 
   const districts = getDistricts(cityCode);
 
-  // Ward list fetched from API so full data can be added server-side without a
-  // frontend rewrite. Currently returns [] for all districts (no data yet).
   const [wards, setWards] = useState([]);
   useEffect(() => {
     if (!cityCode || !districtCode) { setWards([]); return; }
-    fetch(`${API_BASE}/address/wards?province=${cityCode}&district=${districtCode}`)
-      .then((r) => r.json())
-      .then((body) => setWards(body.data || []))
-      .catch(() => setWards([]));
+    let active = true;
+    getWards(cityCode, districtCode).then((list) => { if (active) setWards(list); });
+    return () => { active = false; };
   }, [cityCode, districtCode]);
 
   const handleCityChange = (e) => {

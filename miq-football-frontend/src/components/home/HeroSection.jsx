@@ -1,28 +1,19 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, lazy, Suspense } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, LayoutGrid, Sparkles } from 'lucide-react';
 import CountUp from '../ui/CountUp.jsx';
 import BrandLogos from './BrandLogos.jsx';
-import Shoe3DRotator from '../global/Shoe3DRotator.jsx';
 import { useLanguageStore } from '../../store/languageStore.js';
+
+// Lazy-loaded so the ~3MB R3F bundle + 15MB GLB don't block initial paint
+const HeroShoe3D = lazy(() => import('../global/HeroShoe3D.jsx'));
 
 const HERO_KEY = 'miq-hero-config';
 const getHeroCfg = () => {
   try { return JSON.parse(localStorage.getItem(HERO_KEY) || '{}'); }
   catch { return {}; }
 };
-
-// ── Particle data (deterministic, stable across renders) ───────────────────
-const PARTICLES = Array.from({ length: 14 }, (_, i) => ({
-  id: i,
-  top:      `${12 + (i * 5.7) % 76}%`,
-  left:     `${8  + (i * 6.3) % 84}%`,
-  size:     3 + (i % 4) * 1.6,
-  delay:    (i * 0.28) % 3,
-  duration: 2.0 + (i % 4) * 0.5,
-  opacity:  0.55 + (i % 3) * 0.15,
-}));
 
 // ── Animation variants ─────────────────────────────────────────────────────
 const wordVariants = {
@@ -35,96 +26,12 @@ const containerVariants = {
   visible: { transition: { staggerChildren: 0.12, delayChildren: 0.25 } },
 };
 
-// ── Energy rings — perpetual rotation is intentional brand motion (Rule 100):
-// aria-hidden + useReducedMotion() guard satisfies WCAG 2.3.3 / Rule 73/100.
-// CSS animation (not JS) keeps it on the GPU compositor thread.
-const EnergyRings = () => {
-  const shouldReduce = useReducedMotion();
-  return (
-  <svg
-    className="absolute w-[580px] h-[580px] z-0 pointer-events-none"
-    viewBox="0 0 580 580"
-    aria-hidden="true"
-  >
-    <defs>
-      <linearGradient id="er1" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%"   stopColor="#FB923C" stopOpacity="0" />
-        <stop offset="45%"  stopColor="#E8590C" stopOpacity="0.90" />
-        <stop offset="100%" stopColor="#FDBA74" stopOpacity="0.12" />
-      </linearGradient>
-      <linearGradient id="er2" x1="100%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%"   stopColor="#C2410C" stopOpacity="0" />
-        <stop offset="50%"  stopColor="#EA580C" stopOpacity="0.70" />
-        <stop offset="100%" stopColor="#FB923C" stopOpacity="0.08" />
-      </linearGradient>
-      <linearGradient id="er3" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%"   stopColor="#9A3412" stopOpacity="0" />
-        <stop offset="60%"  stopColor="#C2410C" stopOpacity="0.75" />
-        <stop offset="100%" stopColor="#EA580C" stopOpacity="0" />
-      </linearGradient>
-    </defs>
-
-    {/* Ring 1: wide flat ellipse, dashed, CSS rotate CW */}
-    <ellipse
-      cx="290" cy="290" rx="252" ry="94"
-      fill="none" stroke="url(#er1)" strokeWidth="2.5" strokeDasharray="22 9"
-      style={{ transformOrigin: '290px 290px', animation: shouldReduce ? 'none' : 'ring-cw 18s linear infinite' }}
-    />
-    {/* Ring 2: circle, CSS rotate CCW */}
-    <ellipse
-      cx="290" cy="290" rx="205" ry="205"
-      fill="none" stroke="url(#er2)" strokeWidth="1.5"
-      style={{ transformOrigin: '290px 290px', animation: shouldReduce ? 'none' : 'ring-ccw 13s linear infinite' }}
-    />
-    {/* Ring 3: thin flat ellipse, gentle CSS rock */}
-    <ellipse
-      cx="290" cy="290" rx="268" ry="54"
-      fill="none" stroke="url(#er3)" strokeWidth="3"
-      style={{ transformOrigin: '290px 290px', animation: shouldReduce ? 'none' : 'ring-rock 4.2s ease-in-out infinite' }}
-    />
-  </svg>
-  );
-};
-
 // ── Main component ─────────────────────────────────────────────────────────
 const HeroSection = () => {
-  const sectionRef      = useRef(null);
-  const btnRef          = useRef(null);
-  const spotlightElemRef = useRef(null);
-  const rafRef          = useRef(null);
-  const t               = useLanguageStore((s) => s.t);
-  const cfg             = getHeroCfg();
-  const shouldReduce    = useReducedMotion();
-
-  const [btnPos, setBtnPos] = useState({ x: 0, y: 0 });
-
-  // Direct DOM mutation — no React state, no re-render on every mouse move
-  const handleMouseMove = useCallback((e) => {
-    if (rafRef.current) return; // skip if a frame is already queued
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = null;
-      const el = sectionRef.current;
-      const div = spotlightElemRef.current;
-      if (!el || !div) return;
-      const rect = el.getBoundingClientRect();
-      const x = ((e.clientX - rect.left)  / rect.width)  * 100;
-      const y = ((e.clientY - rect.top)   / rect.height) * 100;
-      div.style.background = `radial-gradient(circle 450px at ${x}% ${y}%, rgba(255,255,255,0.06) 0%, transparent 65%)`;
-    });
-  }, []);
-
-  useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
-
-  const handleMouseLeave = useCallback(() => {}, []);
-
-  const handleBtnMove = (e) => {
-    const rect = btnRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setBtnPos({
-      x: ((e.clientX - rect.left)  / rect.width  - 0.5) * 14,
-      y: ((e.clientY - rect.top)   / rect.height - 0.5) * 8,
-    });
-  };
+  const sectionRef   = useRef(null);
+  const t            = useLanguageStore((s) => s.t);
+  const cfg          = getHeroCfg();
+  const shouldReduce = useReducedMotion();
 
   const handleScrollDown = () => {
     const section = sectionRef.current;
@@ -138,15 +45,17 @@ const HeroSection = () => {
     <section
       ref={sectionRef}
       className="relative overflow-hidden min-h-screen lg:min-h-0 lg:h-full flex flex-col"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       {/* ── Main content area ─────────────────────────────────── */}
       <div className="flex-1 relative flex items-center">
-        {/* ── Video / image background ───────────────────────────── */}
+        {/* ── Compressed background video (~1.6MB) ──────────────────────── */}
         <div className="absolute inset-0">
           <video
-            autoPlay={!shouldReduce} loop muted playsInline preload="metadata"
+            autoPlay={!shouldReduce}
+            loop
+            muted
+            playsInline
+            preload="metadata"
             poster={cfg.videoPoster || "https://images.unsplash.com/photo-1522778526097-ce0a22ceb253?w=1920&q=80"}
             className="absolute inset-0 w-full h-full object-cover"
           >
@@ -154,15 +63,7 @@ const HeroSection = () => {
           </video>
           {/* Gradient overlay so text is always readable */}
           <div className="absolute inset-0 bg-gradient-to-r from-bg-base/95 via-bg-base/78 to-bg-elevated/40" />
-          <div className="absolute inset-0 bg-noise opacity-20 mix-blend-overlay pointer-events-none" />
         </div>
-
-        {/* ── Cursor spotlight — updated via direct DOM ref, no React re-render ── */}
-        <div
-          ref={spotlightElemRef}
-          className="absolute inset-0 pointer-events-none z-[1]"
-          style={{ background: 'radial-gradient(circle 450px at 65% 45%, rgba(255,255,255,0.06) 0%, transparent 65%)' }}
-        />
 
         {/* ── Main 12-col grid ──────────────────────────────────────── */}
         <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 py-24 lg:py-0 flex items-center">
@@ -210,11 +111,9 @@ const HeroSection = () => {
                     paddingTop: '0.25em',
                     paddingBottom: '0.05em',
                     background: 'linear-gradient(135deg, #EA580C 0%, #FB923C 40%, #D4AF37 70%, #E8590C 100%)',
-                    backgroundSize: '200% auto',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                    animation: 'gradient-shift 3s ease infinite',
                   }}
                 >
                   {cfg.line1 || t('heroBig1')}
@@ -270,14 +169,8 @@ const HeroSection = () => {
                 transition={{ duration: 0.5, delay: 0.88 }}
                 className="flex flex-wrap gap-4 mb-12"
               >
-                {/* Primary: MUA NGAY — magnetic */}
-                <motion.div
-                  ref={btnRef}
-                  onMouseMove={handleBtnMove}
-                  onMouseLeave={() => setBtnPos({ x: 0, y: 0 })}
-                  animate={{ x: btnPos.x, y: btnPos.y }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                >
+                {/* Primary: MUA NGAY */}
+                <div>
                   <Link
                     to="/products"
                     className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-white font-bold uppercase tracking-wider px-10 py-5 rounded-xl transition-all duration-300 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden"
@@ -290,7 +183,7 @@ const HeroSection = () => {
                       <ArrowRight className="w-4 h-4 absolute transition-transform duration-300 -translate-x-6 group-hover:translate-x-0" />
                     </span>
                   </Link>
-                </motion.div>
+                </div>
 
                 {/* Secondary: Xem bộ sưu tập */}
                 <Link
@@ -327,64 +220,17 @@ const HeroSection = () => {
             {/* ── RIGHT: Shoe 3D — 7 cols ─────────────────────────── */}
             <div className="lg:col-span-7 relative flex items-center justify-center min-h-[480px] lg:min-h-[620px]">
 
-              {/* Radial spotlight blob — CSS pulsing (GPU composited) */}
-              <div
-                className="absolute w-[560px] h-[560px] rounded-full blur-3xl pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 42%, transparent 70%)',
-                  animation:  'glow-pulse 3.2s ease-in-out infinite',
-                }}
-              />
-
-              {/* Rotating energy rings */}
-              <EnergyRings />
-
-              {/* Particles — CSS float-up animation (offloaded to GPU) */}
-              {PARTICLES.map((p) => (
-                <div
-                  key={p.id}
-                  className="absolute rounded-full bg-primary pointer-events-none z-0"
-                  style={{
-                    top:       p.top,
-                    left:      p.left,
-                    width:     p.size,
-                    height:    p.size,
-                    opacity:   0,
-                    animation: `float-up ${p.duration}s ease-out ${p.delay}s infinite`,
-                  }}
-                />
-              ))}
-
-              {/* Interactive 3D shoe — drag to rotate 360°, or custom image from admin */}
+              {/* Interactive 3D shoe — drag to rotate 360° */}
               <div
                 id="hero-shoe-slot"
-                className="relative z-10 w-[380px] h-[340px] lg:w-[500px] lg:h-[450px]"
-                style={{ animation: shouldReduce ? 'none' : 'shoe-levitate 5.5s ease-in-out infinite' }}
+                className="relative z-10 w-[460px] h-[420px] lg:w-[620px] lg:h-[560px]"
               >
-                {cfg.shoeImageUrl ? (
-                  <img
-                    src={cfg.shoeImageUrl}
-                    alt="Featured shoe"
-                    className="w-full h-full object-contain"
-                    style={{
-                      filter: 'drop-shadow(0 36px 72px rgba(0,0,0,0.50)) drop-shadow(0 12px 28px rgba(0,0,0,0.36))',
-                    }}
-                  />
-                ) : (
-                  <Shoe3DRotator
-                    mode="interactive"
-                    fps={30}
-                    width="100%"
-                    height="100%"
-                    filter="drop-shadow(0 36px 72px rgba(0,0,0,0.50)) drop-shadow(0 12px 28px rgba(0,0,0,0.36))"
-                  />
-                )}
-                {/* Hint label */}
-                {!cfg.shoeImageUrl && (
-                  <p className="absolute bottom-2 inset-x-0 text-center text-[10px] text-text-muted/60 font-medium tracking-widest uppercase pointer-events-none select-none">
-                    {t('heroDrag')}
-                  </p>
-                )}
+                <Suspense fallback={null}>
+                  <HeroShoe3D />
+                </Suspense>
+                <p className="absolute bottom-2 inset-x-0 text-center text-[10px] text-text-muted/60 font-medium tracking-widest uppercase pointer-events-none select-none">
+                  {t('heroDrag')}
+                </p>
               </div>
 
               {/* Pedestal ellipse shadow */}

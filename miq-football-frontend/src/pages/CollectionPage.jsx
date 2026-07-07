@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag } from 'lucide-react';
+import { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowRight, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Canvas, useThree } from '@react-three/fiber';
+import { OrbitControls, useGLTF, Bounds, Environment } from '@react-three/drei';
 import { fetchProducts } from '../services/productService.js';
 import { getCollectionBySlug } from '../services/collectionService.js';
 import ProductCard from '../components/product/ProductCard.jsx';
@@ -10,482 +12,295 @@ import { PageSpinner } from '../components/ui/Skeleton.jsx';
 
 // ── Fallback data when collection not yet in DB ───────────────────────────────
 const BRAND_FALLBACK = {
-  miq:           { displayName: 'MiQ Sport',    brand: 'MiQ',         tagline: 'Thương hiệu thể thao Việt Nam — Chất lượng không biên giới', description: 'MiQ Sport được sinh ra từ tình yêu bóng đá Việt Nam. Chúng tôi mang đến những sản phẩm cao cấp với thiết kế độc quyền, phù hợp từ sân phủi đến giải chuyên nghiệp.', accentColor: '#E8590C', slides: [{ url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1400&q=80', caption: 'MiQ 2025/26 — Flagship Collection' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', title: 'MiQ Predator Series', desc: 'Kiểm soát tuyệt đối' }] },
-  adidas:        { displayName: 'Adidas',        brand: 'Adidas',      tagline: 'Impossible Is Nothing', description: 'Adidas — thương hiệu thể thao hàng đầu thế giới với những đôi giày mang công nghệ tiên tiến nhất.', accentColor: '#000000', slides: [{ url: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=1400&q=80', caption: 'Adidas Predator Elite 2025' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1584735175315-9d5df23be620?w=800&q=80', title: 'Predator Elite', desc: 'Kiểm soát đỉnh cao' }] },
-  nike:          { displayName: 'Nike',          brand: 'Nike',        tagline: 'Just Do It', description: 'Nike Football — từ Phantom GX2 đến Mercurial Vapor, những đôi giày được các ngôi sao hàng đầu thế giới tin chọn.', accentColor: '#FF6B00', slides: [{ url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1400&q=80', caption: 'Nike Phantom GX2 — Chinh phục mọi giới hạn' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80', title: 'Mercurial Vapor', desc: 'Tốc độ không ai sánh bằng' }] },
-  puma:          { displayName: 'Puma',          brand: 'Puma',        tagline: 'Forever Faster', description: 'Puma Football — thương hiệu của tốc độ. Ultra, Future và King là những dòng giày được thiết kế để vượt giới hạn.', accentColor: '#FFD700', slides: [{ url: 'https://images.unsplash.com/photo-1575537302964-96cd47c06b1b?w=1400&q=80', caption: 'Puma Ultra 5 — Nhẹ không tưởng' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=80', title: 'King Pro', desc: 'Di sản bóng đá' }] },
-  'new-balance': { displayName: 'New Balance',  brand: 'New Balance', tagline: 'Fearlessly Independent', description: 'New Balance Football — kết hợp hoàn hảo giữa công nghệ hiện đại và tính thẩm mỹ cao.', accentColor: '#C8102E', slides: [{ url: 'https://images.unsplash.com/photo-1556906781-9a412961a28c?w=1400&q=80', caption: 'New Balance Furon V7' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&q=80', title: 'Tekela V4', desc: 'Phong cách riêng' }] },
-  mizuno:        { displayName: 'Mizuno',        brand: 'Mizuno',      tagline: 'Running is a feeling', description: 'Mizuno Football — thương hiệu Nhật Bản nổi tiếng với chất lượng thủ công và cảm giác bóng chân thực nhất.', accentColor: '#003087', slides: [{ url: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=1400&q=80', caption: 'Mizuno Morelia Neo III' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80', title: 'Wave Cup Legend', desc: 'Thủ công Nhật Bản' }] },
-  umbro:         { displayName: 'Umbro',         brand: 'Umbro',       tagline: 'The Game Lives Here', description: 'Umbro — thương hiệu Anh quốc với lịch sử lâu đời trong bóng đá. Những chiếc áo đấu huyền thoại.', accentColor: '#E30613', slides: [{ url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1400&q=80', caption: 'Umbro Classic Collection' }], modelPhotos: [{ url: 'https://images.unsplash.com/photo-1516478177764-9fe5bd7e9717?w=800&q=80', title: 'Umbro Team Kit', desc: 'Đồng phục thi đấu' }] },
+  miq:           { displayName: 'MiQ Sport',    brand: 'MiQ',         tagline: 'Thương hiệu thể thao Việt Nam — Chất lượng không biên giới', description: 'MiQ Sport được sinh ra từ tình yêu bóng đá Việt Nam. Chúng tôi mang đến những sản phẩm cao cấp với thiết kế độc quyền, phù hợp từ sân phủi đến giải chuyên nghiệp.', accentColor: '#E8590C', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', title: 'MiQ Predator Series', desc: 'Kiểm soát tuyệt đối' }] },
+  adidas:        { displayName: 'Adidas',        brand: 'Adidas',      tagline: 'Impossible Is Nothing', description: 'Adidas — thương hiệu thể thao hàng đầu thế giới với những đôi giày mang công nghệ tiên tiến nhất.', accentColor: '#000000', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1584735175315-9d5df23be620?w=800&q=80', title: 'Predator Elite', desc: 'Kiểm soát đỉnh cao' }] },
+  nike:          { displayName: 'Nike',          brand: 'Nike',        tagline: 'Just Do It', description: 'Nike Football — từ Phantom GX2 đến Mercurial Vapor, những đôi giày được các ngôi sao hàng đầu thế giới tin chọn.', accentColor: '#FF6B00', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80', title: 'Mercurial Vapor', desc: 'Tốc độ không ai sánh bằng' }] },
+  puma:          { displayName: 'Puma',          brand: 'Puma',        tagline: 'Forever Faster', description: 'Puma Football — thương hiệu của tốc độ. Ultra, Future và King là những dòng giày được thiết kế để vượt giới hạn.', accentColor: '#FFD700', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=80', title: 'King Pro', desc: 'Di sản bóng đá' }] },
+  'new-balance': { displayName: 'New Balance',  brand: 'New Balance', tagline: 'Fearlessly Independent', description: 'New Balance Football — kết hợp hoàn hảo giữa công nghệ hiện đại và tính thẩm mỹ cao.', accentColor: '#C8102E', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&q=80', title: 'Tekela V4', desc: 'Phong cách riêng' }] },
+  mizuno:        { displayName: 'Mizuno',        brand: 'Mizuno',      tagline: 'Running is a feeling', description: 'Mizuno Football — thương hiệu Nhật Bản nổi tiếng với chất lượng thủ công và cảm giác bóng chân thực nhất.', accentColor: '#003087', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80', title: 'Wave Cup Legend', desc: 'Thủ công Nhật Bản' }] },
+  umbro:         { displayName: 'Umbro',         brand: 'Umbro',       tagline: 'The Game Lives Here', description: 'Umbro — thương hiệu Anh quốc với lịch sử lâu đời trong bóng đá. Những chiếc áo đấu huyền thoại.', accentColor: '#E30613', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1516478177764-9fe5bd7e9717?w=800&q=80', title: 'Umbro Team Kit', desc: 'Đồng phục thi đấu' }] },
 };
 
-// ── Dark background palette for carousel — shifts per active product ──────────
-const HERO_BG_COLORS = [
-  '#0c0c14', // deep blue-purple
-  '#14080c', // deep burgundy
-  '#08100c', // deep forest
-  '#100c08', // deep umber
-  '#0a0c14', // deep navy
-];
+// ── GLB files available in public/models/ ────────────────────────────────────
+const AVAILABLE_MODELS = ['ball.glb', 'boot1.glb', 'boot2.glb', 'boot3.glb'];
 
-// ── Old slideshow — kept as fallback for N=0 / loading state ─────────────────
-const HeroSlideshow = ({ slides, accentColor }) => {
-  const [current, setCurrent] = useState(0);
-  const timerRef = useRef(null);
+const MODEL_LABELS = {
+  'ball.glb':  'Quả bóng',
+  'boot1.glb': 'Giày đá bóng 1',
+  'boot2.glb': 'Giày đá bóng 2',
+  'boot3.glb': 'Giày đá bóng 3',
+};
 
-  const go = (idx) => setCurrent((idx + slides.length) % slides.length);
+// Kick off all GLB downloads when this module is imported
+AVAILABLE_MODELS.forEach(m => useGLTF.preload('/models/' + m));
 
-  const resetTimer = () => {
-    clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setCurrent((c) => (c + 1) % slides.length), 4500);
-  };
+// Per-model Y rotation so a nice side-profile faces the camera initially.
+// Camera at [0, 0.5, 3.5] + PI/4 rotation ≈ 45° 3/4 hero-shot view.
+// Adjust per model if the default orientation differs visually.
+const MODEL_INIT_ROT = {
+  'ball.glb':  [0, 0,              0],
+  'boot1.glb': [0, Math.PI / 4,   0],
+  'boot2.glb': [0, Math.PI / 4,   0],
+  'boot3.glb': [0, Math.PI / 4,   0],
+};
 
-  useEffect(() => {
-    if (slides.length < 2) return;
-    timerRef.current = setInterval(() => setCurrent((c) => (c + 1) % slides.length), 4500);
-    return () => clearInterval(timerRef.current);
-  }, [slides.length]);
+// ── Inner model component — Bounds handles camera centering ───────────────
+const ModelMesh = ({ url }) => {
+  const { scene } = useGLTF(url);
+  const file = url.replace('/models/', '');
+  const rot  = MODEL_INIT_ROT[file] || [0, 0, 0];
+  return <primitive object={scene} rotation={rot} />;
+};
 
-  const touchStart = useRef(null);
-  const handleTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
-  const handleTouchEnd   = (e) => {
-    if (touchStart.current === null) return;
-    const diff = touchStart.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) { go(current + (diff > 0 ? 1 : -1)); resetTimer(); }
-    touchStart.current = null;
-  };
+// ── Camera resetter — fires on every model switch, before Bounds.fit ──────
+// Resets to a neutral angle so Bounds always fits from the same starting
+// direction (prevents camera drift from user interaction showing the sole).
+const CameraResetter = ({ url }) => {
+  const { camera } = useThree();
+  useLayoutEffect(() => {
+    camera.position.set(0, 0.5, 3.5);
+    camera.lookAt(0, 0, 0);
+  }, [url]);
+  return null;
+};
 
-  if (!slides.length) return (
-    <div className="w-full h-[40vh] bg-bg-raised flex items-center justify-center text-text-muted">
-      <ShoppingBag className="w-12 h-12 opacity-20" />
-    </div>
-  );
+// ── Orbit carousel role helpers ───────────────────────────────────────────────
+// Indices cycle: center=0, right=1, back=2, left=3 relative to activeIdx
+const getRole = (idx, active) => {
+  const ROLES = ['center', 'right', 'back', 'left'];
+  return ROLES[(idx - active + 4) % 4];
+};
 
+const ROLE_STYLE = {
+  center: { transform: 'translateX(0) scale(1)',       opacity: 1,    zIndex: 10, cursor: 'default', pointerEvents: 'auto' },
+  left:   { transform: 'translateX(-56%) scale(0.54)', opacity: 0.45, zIndex: 5,  cursor: 'pointer', pointerEvents: 'auto' },
+  right:  { transform: 'translateX(56%) scale(0.54)',  opacity: 0.45, zIndex: 5,  cursor: 'pointer', pointerEvents: 'auto' },
+  back:   { transform: 'translateX(0) scale(0.28)',    opacity: 0.12, zIndex: 1,  cursor: 'default', pointerEvents: 'none' },
+};
+
+// ── Side-slot thumbnail — real rendered PNG, dark bg fallback if not yet generated ─
+const ThumbCard = ({ file }) => {
+  const name = file.replace('.glb', '');
   return (
     <div
-      className="relative w-full h-[60vh] md:h-[75vh] overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      className="w-full h-full rounded-2xl overflow-hidden flex items-center justify-center select-none"
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0"
-        >
-          <img
-            src={slides[current].url}
-            alt={slides[current].caption}
-            className="w-full h-full object-cover"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        </motion.div>
-      </AnimatePresence>
-
-      {slides[current].caption && (
-        <div className="absolute bottom-12 left-8 md:left-16 z-10">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={current}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="text-white font-display text-lg md:text-2xl font-bold drop-shadow-lg"
-            >
-              {slides[current].caption}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-      )}
-
-      {slides.length > 1 && (
-        <>
-          <button
-            onClick={() => { go(current - 1); resetTimer(); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/60 transition border border-white/20"
-            aria-label="Slide trước"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => { go(current + 1); resetTimer(); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/60 transition border border-white/20"
-            aria-label="Slide tiếp"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { go(i); resetTimer(); }}
-                className="h-1.5 rounded-full transition-all duration-300"
-                style={{ width: i === current ? 28 : 8, backgroundColor: i === current ? accentColor : 'rgba(255,255,255,0.4)' }}
-                aria-label={`Slide ${i + 1}`}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      <img
+        src={'/models/thumbnails/' + name + '.png'}
+        alt={MODEL_LABELS[file] || file}
+        draggable={false}
+        className="w-full h-full object-contain"
+        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+      />
+      <span
+        className="text-white/40 text-[11px] font-bold uppercase tracking-[0.2em] text-center px-6 leading-relaxed"
+        style={{ display: 'none' }}
+      >
+        {MODEL_LABELS[file] || file}
+      </span>
     </div>
   );
 };
 
-// ── 3D Product Carousel — replaces HeroSlideshow ──────────────────────────────
-const ProductCarousel3D = ({ products, prodLoading, brandName, accentColor, fallbackSlides }) => {
-  const navigate = useNavigate();
+// ── Single persistent 3D canvas — lifted above the orbit map, never remounts ──
+// One WebGL context total for the collection page; model switches via Bounds key.
+// dpr cap + antialias:false keep GPU load low.
+const LiveCanvas = ({ file, reducedMotion }) => {
+  const url = '/models/' + file;
+  return (
+    <Canvas
+      dpr={[1, 1.5]}
+      style={{ width: '100%', height: '100%' }}
+      camera={{ position: [0, 0.5, 3.5], fov: 48 }}
+      gl={{ antialias: false, alpha: true }}
+      onCreated={({ gl }) => {
+        gl.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); });
+      }}
+    >
+      {/* Reset camera to neutral angle on every model switch (before Bounds.fit) */}
+      <CameraResetter url={url} />
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 8, 5]} intensity={2.5} />
+      <directionalLight position={[-4, -2, -3]} intensity={0.6} />
+      <hemisphereLight args={['#c8d8f0', '#0c0810', 0.55]} />
+      <Suspense fallback={null}>
+        <Environment preset="studio" background={false} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Bounds key={url} fit clip observe damping={0} margin={1.2}>
+          <ModelMesh url={url} />
+        </Bounds>
+      </Suspense>
+      <OrbitControls
+        key={url}
+        enablePan={false}
+        enableZoom={false}
+        autoRotate={!reducedMotion}
+        autoRotateSpeed={1.5}
+        minPolarAngle={Math.PI * 0.25}
+        maxPolarAngle={Math.PI * 0.65}
+      />
+    </Canvas>
+  );
+};
 
-  // Pad to ≥4 so carousel math is always clean.
-  // N < 4 → repeat products to fill 4 slots.
-  // N == 0 → handled by early return below.
-  const items = useMemo(() => {
-    if (!products || products.length === 0) return [];
-    if (products.length < 4) {
-      return Array.from({ length: 4 }, (_, i) => products[i % products.length]);
-    }
-    return products;
-  }, [products]);
-
-  const N = items.length;
-
-  const [active,      setActive]   = useState(0);
-  const [isAnimating, setIsAnim]   = useState(false);
-  const [bgColor,     setBgColor]  = useState(HERO_BG_COLORS[0]);
-  const [isMobile,    setIsMobile] = useState(
+// ── Orbit carousel — section 1 of the collection page ─────────────────────────
+const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
+  const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' && window.innerWidth < 640
   );
-
-  // Detect prefers-reduced-motion once at mount
   const reducedMotion = useRef(
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   ).current;
 
-  // Responsive listener
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    const h = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
   }, []);
 
-  // Reset position when the product list changes (brand switch)
-  useEffect(() => {
-    setActive(0);
-    setBgColor(HERO_BG_COLORS[0]);
-  }, [items]);
+  const initIdx = AVAILABLE_MODELS.indexOf(modelFile);
+  const [activeIdx, setActiveIdx] = useState(initIdx >= 0 ? initIdx : 0);
 
-  // ── All hooks called — early returns are safe below ──────────────────────
+  const select    = (i) => { if (i !== activeIdx) setActiveIdx(i); };
+  const prevModel = () => select((activeIdx - 1 + 4) % 4);
+  const nextModel = () => select((activeIdx + 1) % 4);
 
-  // While products are loading or there are none, fall back to the old slideshow
-  if (prodLoading || N === 0) {
-    return <HeroSlideshow slides={fallbackSlides || []} accentColor={accentColor} />;
-  }
-
-  // ── Slot indices ─────────────────────────────────────────────────────────
-  const slots = {
-    center: active,
-    right:  (active + 1) % N,
-    back:   (active + 2) % N,
-    left:   (active - 1 + N) % N,
-  };
-
-  const getRole = (idx) => {
-    if (idx === slots.center) return 'center';
-    if (idx === slots.left)   return 'left';
-    if (idx === slots.right)  return 'right';
-    if (idx === slots.back)   return 'back';
-    return 'hidden';
-  };
-
-  // ── Position/style tables for desktop vs mobile ──────────────────────────
-  const ROLES = isMobile ? {
-    center: { x: 0,    s: 1.0,  z: 4, o: 1,    blur: 0   },
-    left:   { x: -148, s: 0.68, z: 3, o: 0.78, blur: 2   },
-    right:  { x:  148, s: 0.68, z: 3, o: 0.78, blur: 2   },
-    back:   { x: 0,    s: 0.46, z: 1, o: 0.22, blur: 7   },
-    hidden: { x: 0,    s: 0.18, z: 0, o: 0,    blur: 8   },
-  } : {
-    center: { x: 0,    s: 1.15, z: 4, o: 1,    blur: 0   },
-    left:   { x: -286, s: 0.76, z: 3, o: 0.8,  blur: 2.5 },
-    right:  { x:  286, s: 0.76, z: 3, o: 0.8,  blur: 2.5 },
-    back:   { x: 0,    s: 0.52, z: 1, o: 0.2,  blur: 8   },
-    hidden: { x: 0,    s: 0.18, z: 0, o: 0,    blur: 8   },
-  };
-
-  const ITEM_W   = isMobile ? 158 : 240;
-  const ITEM_H   = isMobile ? 198 : 300;
-  const STAGE_H  = isMobile ? 420 : 580;
-  const EASE_CSS = 'cubic-bezier(0.4,0,0.2,1)';
-  const DUR      = '650ms';
-  const TRANSITION = reducedMotion
-    ? 'none'
-    : `transform ${DUR} ${EASE_CSS}, opacity ${DUR} ${EASE_CSS}, filter ${DUR} ${EASE_CSS}`;
-
-  const centeredProduct = items[active];
-  const centeredImgUrl  = centeredProduct && centeredProduct.images && centeredProduct.images[0]
-    ? centeredProduct.images[0].url : '';
-
-  const rotate = (dir) => {
-    if (isAnimating) return;
-    const next = (active + dir + N) % N;
-    if (!reducedMotion) {
-      setIsAnim(true);
-      setTimeout(() => setIsAnim(false), 660);
-    }
-    setActive(next);
-    setBgColor(HERO_BG_COLORS[next % HERO_BG_COLORS.length]);
-  };
+  const stageH = isMobile ? 420 : 560;
+  const itemW  = isMobile ? 300 : 500;
+  const itemH  = isMobile ? 360 : 520;
 
   return (
     <div
-      className="relative w-full overflow-hidden select-none"
-      style={{
-        height: `${STAGE_H}px`,
-        backgroundColor: bgColor,
-        transition: reducedMotion ? 'none' : `background-color ${DUR} ${EASE_CSS}`,
-      }}
+      className="relative w-full overflow-hidden"
+      style={{ height: stageH + 'px' }}
     >
-      {/* Giant ghost brand name — Oswald font, nearly transparent */}
+      {/* Ghost brand text */}
       <div
         className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none"
         aria-hidden="true"
         style={{ zIndex: 0 }}
       >
         <span
-          className="font-display font-black uppercase text-white"
-          style={{
-            fontSize: isMobile ? '30vw' : '21vw',
-            opacity: 0.042,
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-            userSelect: 'none',
-          }}
+          className="font-display font-black uppercase text-white select-none"
+          style={{ fontSize: isMobile ? '30vw' : '21vw', opacity: 0.042, letterSpacing: '-0.02em', lineHeight: 1 }}
         >
           {brandName}
         </span>
       </div>
 
-      {/* Radial accent glow behind center */}
+      {/* Radial accent glow */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{
-          zIndex: 0,
-          background: `radial-gradient(ellipse 55% 45% at 50% 52%, ${accentColor}1a 0%, transparent 68%)`,
-          transition: reducedMotion ? 'none' : `opacity ${DUR} ${EASE_CSS}`,
-        }}
+        style={{ zIndex: 0, background: 'radial-gradient(ellipse 60% 50% at 50% 52%, ' + accentColor + '18 0%, transparent 70%)' }}
       />
 
-      {/* Brand label — top left */}
-      <div className="absolute top-5 left-5 md:left-10" style={{ zIndex: 30 }}>
+      {/* Orbit items — side thumbnails only; center slot is blank (covered by Canvas) */}
+      {AVAILABLE_MODELS.map((file, i) => {
+        const role   = getRole(i, activeIdx);
+        const center = role === 'center';
+        return (
+          <div
+            key={file}
+            onClick={() => { if (!center) select(i); }}
+            onKeyDown={(e) => { if (!center && (e.key === 'Enter' || e.key === ' ')) select(i); }}
+            role={center ? undefined : 'button'}
+            tabIndex={center ? undefined : 0}
+            aria-label={center ? undefined : (MODEL_LABELS[file] || file)}
+            style={{
+              position:   'absolute',
+              top:        '50%',
+              left:       '50%',
+              width:      itemW + 'px',
+              height:     itemH + 'px',
+              marginLeft: -(itemW / 2) + 'px',
+              marginTop:  -(itemH / 2) + 'px',
+              transition: 'transform 650ms cubic-bezier(0.34,1.1,0.64,1), opacity 550ms ease',
+              willChange: 'transform, opacity',
+              ...ROLE_STYLE[role],
+            }}
+          >
+            {center ? null : <ThumbCard file={file} />}
+          </div>
+        );
+      })}
+
+      {/* Single persistent Canvas — fixed at center, above orbit items (z=11).
+          Never unmounts on model switch → one WebGL context for the whole page. */}
+      <div
+        style={{
+          position:   'absolute',
+          top:        '50%',
+          left:       '50%',
+          width:      itemW + 'px',
+          height:     itemH + 'px',
+          marginLeft: -(itemW / 2) + 'px',
+          marginTop:  -(itemH / 2) + 'px',
+          zIndex:     11,
+        }}
+      >
+        <LiveCanvas file={AVAILABLE_MODELS[activeIdx]} reducedMotion={reducedMotion} />
+      </div>
+
+      {/* Brand label + active model name — top left, above orbit */}
+      <div className="absolute top-5 left-5 md:left-10" style={{ zIndex: 20 }}>
         <span
           className="font-display text-[10px] font-bold uppercase tracking-[0.22em]"
           style={{ color: accentColor }}
         >
           {brandName} Collection
         </span>
-      </div>
-
-      {/* ── Carousel stage ─────────────────────────────────────────────── */}
-      <div className="absolute inset-0" style={{ zIndex: 10 }}>
-        {items.map((product, i) => {
-          const role = getRole(i);
-          const r    = ROLES[role] || ROLES.hidden;
-          const imgUrl = product && product.images && product.images[0]
-            ? product.images[0].url : '';
-
-          return (
-            <div
-              key={String(i)}
-              style={{
-                position: 'absolute',
-                left:   '50%',
-                top:    '50%',
-                width:  `${ITEM_W}px`,
-                height: `${ITEM_H}px`,
-                transform: `translate(-50%, -50%) translateX(${r.x}px) scale(${r.s})`,
-                zIndex:     r.z,
-                opacity:    r.o,
-                filter:    `blur(${r.blur}px)`,
-                transition: TRANSITION,
-                pointerEvents: r.o === 0 ? 'none' : 'auto',
-                willChange: 'transform, opacity, filter',
-              }}
-              onClick={role === 'center' && product._id
-                ? () => navigate('/products/' + product._id)
-                : undefined}
-            >
-              {/* Product card */}
-              <div
-                className="w-full h-full rounded-2xl overflow-hidden"
-                style={{
-                  cursor: role === 'center' ? 'pointer' : 'default',
-                  backgroundColor: '#1c1c1c',
-                  border: role === 'center'
-                    ? `2px solid ${accentColor}55`
-                    : '1px solid rgba(255,255,255,0.09)',
-                  boxShadow: role === 'center'
-                    ? `0 24px 64px rgba(0,0,0,0.65), 0 0 48px ${accentColor}1a`
-                    : '0 8px 28px rgba(0,0,0,0.45)',
-                  transition: reducedMotion ? 'none' : `border-color ${DUR} ${EASE_CSS}, box-shadow ${DUR} ${EASE_CSS}`,
-                }}
-              >
-                {imgUrl ? (
-                  <img
-                    src={imgUrl}
-                    alt={product.name || brandName}
-                    className="w-full h-full object-cover"
-                    draggable={false}
-                    loading={i < 4 ? 'eager' : 'lazy'}
-                  />
-                ) : (
-                  /* Placeholder when product has no image */
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{
-                      background: `linear-gradient(135deg, ${accentColor}28 0%, ${accentColor}0c 100%)`,
-                    }}
-                  >
-                    <span
-                      className="font-display font-black uppercase text-center"
-                      style={{ color: accentColor, fontSize: 12, letterSpacing: '0.12em' }}
-                    >
-                      {brandName}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Center product info (name + price) ─────────────────────────── */}
-      {centeredProduct && (
         <div
-          className="absolute left-1/2 pointer-events-none text-center"
-          style={{
-            bottom: isMobile ? '52px' : '62px',
-            zIndex: 30,
-            transform: 'translateX(-50%)',
-            width: isMobile ? '200px' : '280px',
-          }}
+          className="text-white/45 text-[10px] mt-0.5 tracking-wide"
+          data-active-model={AVAILABLE_MODELS[activeIdx]}
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={active}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {centeredProduct.name && (
-                <p className="font-display font-bold uppercase text-white text-xs md:text-sm drop-shadow-md tracking-wide line-clamp-1 mb-0.5">
-                  {centeredProduct.name}
-                </p>
-              )}
-              {centeredProduct.price != null && (
-                <p
-                  className="font-display font-bold text-sm md:text-base"
-                  style={{ color: accentColor }}
-                >
-                  {centeredProduct.price.toLocaleString('vi-VN')} ₫
-                </p>
-              )}
-            </motion.div>
-          </AnimatePresence>
+          {MODEL_LABELS[AVAILABLE_MODELS[activeIdx]] || AVAILABLE_MODELS[activeIdx]}
         </div>
-      )}
+      </div>
 
-      {/* ── Prev / Next arrows ─────────────────────────────────────────── */}
+      {/* Prev arrow */}
       <button
-        onClick={() => rotate(-1)}
-        disabled={isAnimating}
-        aria-label="Sản phẩm trước"
-        className="absolute top-1/2 flex items-center justify-center"
+        onClick={prevModel}
+        aria-label="Mô hình trước"
+        className="absolute top-1/2 left-3 md:left-5 flex items-center justify-center rounded-full hover:bg-black/65"
         style={{
-          left: isMobile ? '10px' : '28px',
-          zIndex: 30,
-          transform: 'translateY(-50%)',
-          width: 44, height: 44,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.10)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.15)',
-          color: 'white',
-          cursor: isAnimating ? 'default' : 'pointer',
-          opacity: isAnimating ? 0.45 : 1,
-          transition: 'opacity 200ms, background 200ms',
+          transform: 'translateY(-50%)', zIndex: 30,
+          width: 40, height: 40,
+          background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)',
+          color: 'rgba(255,255,255,0.8)', cursor: 'pointer',
         }}
       >
-        <ChevronLeft style={{ width: 20, height: 20 }} />
-      </button>
-      <button
-        onClick={() => rotate(1)}
-        disabled={isAnimating}
-        aria-label="Sản phẩm tiếp"
-        className="absolute top-1/2 flex items-center justify-center"
-        style={{
-          right: isMobile ? '10px' : '28px',
-          zIndex: 30,
-          transform: 'translateY(-50%)',
-          width: 44, height: 44,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.10)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.15)',
-          color: 'white',
-          cursor: isAnimating ? 'default' : 'pointer',
-          opacity: isAnimating ? 0.45 : 1,
-          transition: 'opacity 200ms, background 200ms',
-        }}
-      >
-        <ChevronRight style={{ width: 20, height: 20 }} />
+        <ChevronLeft size={20} />
       </button>
 
-      {/* ── Dot indicators ─────────────────────────────────────────────── */}
+      {/* Next arrow */}
+      <button
+        onClick={nextModel}
+        aria-label="Mô hình tiếp theo"
+        className="absolute top-1/2 right-3 md:right-5 flex items-center justify-center rounded-full hover:bg-black/65"
+        style={{
+          transform: 'translateY(-50%)', zIndex: 30,
+          width: 40, height: 40,
+          background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)',
+          color: 'rgba(255,255,255,0.8)', cursor: 'pointer',
+        }}
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* Drag hint */}
       <div
-        className="absolute left-1/2 flex items-center gap-2"
-        style={{
-          bottom: isMobile ? '18px' : '22px',
-          zIndex: 30,
-          transform: 'translateX(-50%)',
-        }}
+        className="absolute left-1/2 pointer-events-none select-none"
+        style={{ bottom: 16, transform: 'translateX(-50%)', zIndex: 20 }}
       >
-        {items.map((_, dotIdx) => (
-          <button
-            key={dotIdx}
-            aria-label={`Sản phẩm ${dotIdx + 1}`}
-            onClick={() => {
-              if (!isAnimating) {
-                setActive(dotIdx);
-                setBgColor(HERO_BG_COLORS[dotIdx % HERO_BG_COLORS.length]);
-              }
-            }}
-            style={{
-              height: 6,
-              borderRadius: 3,
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              width: dotIdx === active ? 24 : 8,
-              backgroundColor: dotIdx === active
-                ? accentColor
-                : 'rgba(255,255,255,0.28)',
-              transition: reducedMotion ? 'none' : 'width 300ms, background-color 300ms',
-            }}
-          />
-        ))}
+        <span className="text-white/30 text-[10px] uppercase tracking-widest">Kéo để xoay</span>
       </div>
     </div>
   );
 };
 
-// ── Model photo card ───────────────────────────────────────────────────────────
+// ── Model photo card (section 2) — unchanged ─────────────────────────────────
 const ModelPhotoCard = ({ photo, brandName, brandParam, delay = 0 }) => (
   <motion.div
     initial={{ opacity: 0, y: 30 }}
@@ -506,7 +321,7 @@ const ModelPhotoCard = ({ photo, brandName, brandParam, delay = 0 }) => (
       {photo.title && <h3 className="text-white font-display text-lg font-bold mb-1">{photo.title}</h3>}
       {photo.desc  && <p className="text-white/70 text-sm mb-3">{photo.desc}</p>}
       <Link
-        to={`/products?brand=${encodeURIComponent(brandParam)}`}
+        to={'/products?brand=' + encodeURIComponent(brandParam)}
         className="inline-flex items-center gap-2 text-xs font-bold text-white bg-white/15 backdrop-blur-sm border border-white/25 px-4 py-2 rounded-full hover:bg-white/25 transition"
       >
         Xem sản phẩm <ArrowRight className="w-3.5 h-3.5" />
@@ -515,11 +330,10 @@ const ModelPhotoCard = ({ photo, brandName, brandParam, delay = 0 }) => (
   </motion.div>
 );
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 const CollectionPage = () => {
   const { slug } = useParams();
 
-  // Try to load from DB first
   const { data: dbCollection, isLoading: colLoading } = useQuery({
     queryKey: ['collection', slug],
     queryFn: () => getCollectionBySlug(slug),
@@ -527,17 +341,16 @@ const CollectionPage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fallback to hardcoded data if collection not in DB yet
-  const fb = BRAND_FALLBACK[slug] || BRAND_FALLBACK.miq;
+  const fb  = BRAND_FALLBACK[slug] || BRAND_FALLBACK.miq;
   const col = dbCollection || fb;
 
-  const displayName  = col.name        || fb.displayName;
-  const brand        = col.brand       || fb.brand;
-  const tagline      = col.tagline     || fb.tagline;
-  const description  = col.description || fb.description;
-  const accentColor  = col.accentColor || fb.accentColor;
-  const slides       = (col.slides?.length      ? col.slides      : fb.slides)      || [];
-  const modelPhotos  = (col.modelPhotos?.length  ? col.modelPhotos : fb.modelPhotos) || [];
+  const displayName = col.name        || fb.displayName;
+  const brand       = col.brand       || fb.brand;
+  const tagline     = col.tagline     || fb.tagline;
+  const description = col.description || fb.description;
+  const accentColor = col.accentColor || fb.accentColor;
+  const modelPhotos = (col.modelPhotos && col.modelPhotos.length ? col.modelPhotos : fb.modelPhotos) || [];
+  const model3d     = col.model3d || 'boot1.glb';
 
   const { data: productsData, isLoading: prodLoading } = useQuery({
     queryKey: ['collection-products', brand],
@@ -546,22 +359,21 @@ const CollectionPage = () => {
     enabled: !!brand,
   });
 
-  const products = productsData?.products ?? [];
+  const products = productsData && productsData.products ? productsData.products : [];
 
   if (colLoading) return <PageSpinner />;
 
   return (
     <div className="bg-bg-base min-h-screen">
-      {/* Section 1: 3D Product Carousel (replaces old slideshow) */}
-      <ProductCarousel3D
-        products={products}
-        prodLoading={prodLoading}
+
+      {/* ── Section 1: 3D model viewer ────────────────────────────────────── */}
+      <Model3DViewer
+        modelFile={model3d}
         brandName={brand}
         accentColor={accentColor}
-        fallbackSlides={slides}
       />
 
-      {/* Brand header */}
+      {/* ── Brand header ──────────────────────────────────────────────────── */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 py-12">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -571,7 +383,7 @@ const CollectionPage = () => {
         >
           <div
             className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.25em] px-4 py-1.5 rounded-full mb-4 border"
-            style={{ color: accentColor, borderColor: `${accentColor}40`, backgroundColor: `${accentColor}10` }}
+            style={{ color: accentColor, borderColor: accentColor + '40', backgroundColor: accentColor + '10' }}
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             Bộ sưu tập chính thức
@@ -591,7 +403,7 @@ const CollectionPage = () => {
           )}
         </motion.div>
 
-        {/* Section 2: Model photos */}
+        {/* ── Section 2: Editorial / model photos ───────────────────────── */}
         {modelPhotos.length > 0 && (
           <section className="mb-20">
             <motion.h2
@@ -616,7 +428,7 @@ const CollectionPage = () => {
           </section>
         )}
 
-        {/* Section 3: Products */}
+        {/* ── Section 3: Products grid ───────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-8">
             <motion.h2
@@ -628,7 +440,7 @@ const CollectionPage = () => {
               Sản phẩm {displayName}
             </motion.h2>
             <Link
-              to={`/products?brand=${encodeURIComponent(brand)}`}
+              to={'/products?brand=' + encodeURIComponent(brand)}
               className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition"
             >
               Xem tất cả <ArrowRight className="w-4 h-4" />
@@ -675,7 +487,7 @@ const CollectionPage = () => {
                 className="flex justify-center mt-10"
               >
                 <Link
-                  to={`/products?brand=${encodeURIComponent(brand)}`}
+                  to={'/products?brand=' + encodeURIComponent(brand)}
                   className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3.5 rounded-full hover:bg-primary/90 transition shadow-lg"
                 >
                   Xem tất cả {displayName} <ArrowRight className="w-4 h-4" />

@@ -26,7 +26,7 @@ export const createCollection = catchAsync(async (req, res) => {
 
 // PUT /api/v1/collections/:id  (admin) — updates basic fields only
 export const updateCollection = catchAsync(async (req, res) => {
-  const { name, brand, tagline, description, accentColor, isActive } = req.body;
+  const { name, brand, tagline, description, accentColor, isActive, model3d } = req.body;
   const updates = {};
   if (name      !== undefined) updates.name      = name;
   if (brand     !== undefined) { updates.brand = brand; updates.slug = slugify(brand, { lower: true, strict: true }); }
@@ -34,6 +34,7 @@ export const updateCollection = catchAsync(async (req, res) => {
   if (description !== undefined) updates.description = description;
   if (accentColor !== undefined) updates.accentColor = accentColor;
   if (isActive  !== undefined) updates.isActive  = isActive;
+  if (model3d   !== undefined) updates.model3d   = model3d;
 
   const collection = await Collection.findByIdAndUpdate(
     req.params.id,

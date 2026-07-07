@@ -14,6 +14,12 @@ export default defineConfig(({ mode }) => ({
       brotliSize: true,
     }),
   ],
+  // Tell Vite to treat .glb files as static assets (needed in Vite 8)
+  assetsInclude: ['**/*.glb', '**/*.gltf'],
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
   optimizeDeps: {
     include: ['react-window', 'socket.io-client'],
   },

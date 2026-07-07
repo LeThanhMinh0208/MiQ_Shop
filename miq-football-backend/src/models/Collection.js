@@ -25,6 +25,7 @@ const collectionSchema = new Schema({
   accentColor: { type: String, default: '#10B981' },
   slides:      [slideSchema],
   modelPhotos: [modelPhotoSchema],
+  model3d:     { type: String, default: 'boot1.glb' },
   isActive:    { type: Boolean, default: true },
 }, { timestamps: true });
 
