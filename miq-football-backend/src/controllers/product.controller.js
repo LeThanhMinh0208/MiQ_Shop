@@ -134,12 +134,44 @@ export const setFlashSale = catchAsync(async (req, res) => {
 // GET /api/v1/products/new-arrivals?limit=5
 export const getNewArrivals = catchAsync(async(req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 5, 10);
+
+    // Prefer admin-curated new arrivals; fall back to newest-by-createdAt
+    const flagged = await Product.find({ isActive: true, isNewArrival: true })
+        .populate('category', 'name slug')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean();
+
+    if (flagged.length > 0) {
+        return res.status(200).json(new ApiResponse(200, flagged, 'Sản phẩm mới nhất'));
+    }
+
     const products = await Product.find({ isActive: true })
         .populate('category', 'name slug')
         .sort({ createdAt: -1 })
         .limit(limit)
         .lean();
     res.status(200).json(new ApiResponse(200, products, 'Sản phẩm mới nhất'));
+});
+
+// GET /api/v1/products/admin/new-arrivals (Admin)
+export const getAdminNewArrivals = catchAsync(async (req, res) => {
+    const products = await Product.find({ isNewArrival: true })
+        .populate('category', 'name slug')
+        .sort({ createdAt: -1 })
+        .lean();
+    res.status(200).json(new ApiResponse(200, products, 'Sản phẩm mới (admin)'));
+});
+
+// PATCH /api/v1/products/:id/new-arrival (Admin)
+export const setNewArrival = catchAsync(async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) throw new ApiError(404, 'Không tìm thấy sản phẩm');
+    const { isNewArrival } = req.body;
+    if (typeof isNewArrival !== 'boolean') throw new ApiError(400, 'isNewArrival phải là boolean');
+    product.isNewArrival = isNewArrival;
+    await product.save();
+    res.status(200).json(new ApiResponse(200, product, 'Cập nhật sản phẩm mới thành công'));
 });
 
 // GET /api/v1/products/:id
@@ -181,7 +213,7 @@ export const createProduct = catchAsync(async(req, res) => {
 // hook when name changes; ratings are managed via the review endpoints.
 const PRODUCT_ALLOWED = new Set([
     'name', 'description', 'brand', 'category', 'price', 'salePrice',
-    'variants', 'tags', 'sport', 'features', 'isFeatured', 'isActive', 'accentColor',
+    'variants', 'tags', 'sport', 'features', 'isFeatured', 'isNewArrival', 'isActive', 'accentColor',
 ]);
 
 // PUT /api/v1/products/:id (Admin)

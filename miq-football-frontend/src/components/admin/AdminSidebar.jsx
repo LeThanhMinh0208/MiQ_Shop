@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tag,
   LogOut, ChevronLeft, ChevronRight, MessageCircle,
-  Newspaper, PlayCircle, ImagePlay, Layers, Home, Layers3, FileText, RefreshCw, Printer, Ticket, Zap,
+  Newspaper, PlayCircle, ImagePlay, Layers, Home, Layers3, FileText, RefreshCw, Printer, Ticket, Zap, Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore.js';
 import { useThemeStore } from '../../store/themeStore.js';
@@ -26,6 +26,7 @@ const links = [
   { to: '/admin/print-orders', icon: Printer,         label: 'Đặt in theo đội' },
   { to: '/admin/vouchers',     icon: Ticket,          label: 'Mã giảm giá' },
   { to: '/admin/flash-sale',   icon: Zap,             label: 'Flash Sale' },
+  { to: '/admin/new-arrivals', icon: Sparkles,        label: 'Sản phẩm mới' },
   { to: '/admin/site-assets',  icon: Layers,          label: 'Hình ảnh' },
   { to: '/admin/chat',         icon: MessageCircle,   label: 'Chat' },
 ];

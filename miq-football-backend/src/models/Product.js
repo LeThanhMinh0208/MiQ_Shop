@@ -27,8 +27,9 @@ const productSchema = new mongoose.Schema({
     features: [String],
     ratings: { average: { type: Number, default: 0 }, count: { type: Number, default: 0 } },
     reviews: [reviewSchema],
-    isFeatured: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: true },
+    isFeatured:    { type: Boolean, default: false },
+    isNewArrival:  { type: Boolean, default: false },
+    isActive:      { type: Boolean, default: true },
     accentColor: {
         hex: { type: String, default: '#10B981' },
         rgb: { type: String, default: '16, 185, 129' },

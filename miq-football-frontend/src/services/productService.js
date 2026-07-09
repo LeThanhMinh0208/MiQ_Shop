@@ -39,3 +39,13 @@ export const setProductFlashSale = async (id, payload) => {
     const { data } = await api.patch(`/products/${id}/flash-sale`, payload);
     return data.data;
 };
+
+export const getAdminNewArrivalProducts = async () => {
+    const { data } = await api.get('/products/admin/new-arrivals');
+    return data.data;
+};
+
+export const setProductNewArrival = async (id, isNewArrival) => {
+    const { data } = await api.patch(`/products/${id}/new-arrival`, { isNewArrival });
+    return data.data;
+};
