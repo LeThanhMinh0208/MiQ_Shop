@@ -49,6 +49,7 @@ const QuoteManagement       = lazy(() => import('./pages/admin/QuoteManagement.j
 const TradeInManagement     = lazy(() => import('./pages/admin/TradeInManagement.jsx'));
 const PrintOrderManagement  = lazy(() => import('./pages/admin/PrintOrderManagement.jsx'));
 const VoucherManagement     = lazy(() => import('./pages/admin/VoucherManagement.jsx'));
+const FlashSaleManagement   = lazy(() => import('./pages/admin/FlashSaleManagement.jsx'));
 import ChatWidget from './components/ui/ChatWidget.jsx';
 import { useAuthStore } from './store/authStore.js';
 import { useThemeStore } from './store/themeStore.js';
@@ -113,7 +114,8 @@ function AppContent() {
             <Route path="quotes" element={<Suspense fallback={<AdminLoadingFallback />}><QuoteManagement /></Suspense>} />
             <Route path="trade-ins" element={<Suspense fallback={<AdminLoadingFallback />}><TradeInManagement /></Suspense>} />
             <Route path="print-orders" element={<Suspense fallback={<AdminLoadingFallback />}><PrintOrderManagement /></Suspense>} />
-            <Route path="vouchers"     element={<Suspense fallback={<AdminLoadingFallback />}><VoucherManagement /></Suspense>} />
+            <Route path="vouchers"    element={<Suspense fallback={<AdminLoadingFallback />}><VoucherManagement /></Suspense>} />
+            <Route path="flash-sale" element={<Suspense fallback={<AdminLoadingFallback />}><FlashSaleManagement /></Suspense>} />
           </Route>
         </Routes>
       ) : (

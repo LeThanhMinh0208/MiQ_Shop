@@ -29,3 +29,13 @@ export const fetchFlashSale = async(limit = 8) => {
     const { data } = await api.get('/products/flash-sale', { params: { limit } });
     return data.data;
 };
+
+export const getAdminFlashSaleProducts = async () => {
+    const { data } = await api.get('/products/admin/flash-sale');
+    return data.data;
+};
+
+export const setProductFlashSale = async (id, payload) => {
+    const { data } = await api.patch(`/products/${id}/flash-sale`, payload);
+    return data.data;
+};

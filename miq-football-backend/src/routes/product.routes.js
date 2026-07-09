@@ -4,6 +4,8 @@ import {
     getProduct,
     getNewArrivals,
     getFlashSale,
+    getAdminFlashSale,
+    setFlashSale,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -18,8 +20,9 @@ import { uploadProductImages } from '../middlewares/upload.middleware.js';
 const router = Router();
 
 router.get('/', getProducts);
-router.get('/new-arrivals', getNewArrivals);  // must be before /:id
-router.get('/flash-sale',   getFlashSale);   // must be before /:id
+router.get('/new-arrivals',      getNewArrivals);          // must be before /:id
+router.get('/flash-sale',        getFlashSale);            // must be before /:id
+router.get('/admin/flash-sale',  protect, isAdmin, getAdminFlashSale); // must be before /:id
 router.get('/:id', getProduct);
 router.post('/', protect, isAdmin, ...uploadProductImages.array('images', 5), createProduct);
 
@@ -27,6 +30,7 @@ router.post('/', protect, isAdmin, ...uploadProductImages.array('images', 5), cr
 router.get('/:id/can-review', protect, checkCanReview);
 router.post('/:id/reviews', protect, addReview);
 router.delete('/:id/reviews/:reviewId', protect, deleteReview);
+router.patch('/:id/flash-sale', protect, isAdmin, setFlashSale);
 router.put('/:id', protect, isAdmin, ...uploadProductImages.array('images', 5), updateProduct);
 router.delete('/:id', protect, isAdmin, deleteProduct);
 

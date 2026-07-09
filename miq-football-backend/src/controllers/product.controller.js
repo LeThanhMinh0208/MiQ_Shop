@@ -103,6 +103,34 @@ export const getFlashSale = catchAsync(async(req, res) => {
     res.status(200).json(new ApiResponse(200, [...withFlash, ...fallback], 'Flash sale products'));
 });
 
+// GET /api/v1/products/admin/flash-sale (Admin) — all products with salePrice set
+export const getAdminFlashSale = catchAsync(async (req, res) => {
+    const products = await Product.find({ salePrice: { $ne: null, $exists: true } })
+        .populate('category', 'name slug')
+        .sort({ updatedAt: -1 })
+        .lean();
+    res.status(200).json(new ApiResponse(200, products, 'Flash sale products (admin)'));
+});
+
+// PATCH /api/v1/products/:id/flash-sale (Admin) — set or clear flash sale fields
+export const setFlashSale = catchAsync(async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    if (!product) throw new ApiError(404, 'Không tìm thấy sản phẩm');
+
+    const { salePrice, flashSale } = req.body;
+
+    if (salePrice !== undefined) {
+        product.salePrice = (salePrice === null || salePrice === '') ? null : Number(salePrice);
+    }
+    if (flashSale !== undefined) {
+        const { soldCount: _ignored, ...safeSale } = flashSale;
+        product.flashSale = { ...(product.flashSale.toObject?.() ?? product.flashSale), ...safeSale };
+    }
+
+    await product.save();
+    res.status(200).json(new ApiResponse(200, product, 'Cập nhật flash sale thành công'));
+});
+
 // GET /api/v1/products/new-arrivals?limit=5
 export const getNewArrivals = catchAsync(async(req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 5, 10);

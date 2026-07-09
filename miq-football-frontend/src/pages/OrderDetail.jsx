@@ -173,8 +173,8 @@ const OrderDetail = () => {
               <div key={i} className="flex items-center gap-3">
                 <div className="w-14 h-14 bg-surface-border dark:bg-gray-700 rounded-xl overflow-hidden flex-shrink-0 border border-surface-border dark:border-gray-600 p-1.5">
                   <img
-                    src={item.product?.images?.[0]?.url}
-                    alt={item.product?.name || item.name}
+                    src={item.image}
+                    alt={item.name}
                     loading="lazy"
                     decoding="async"
                     className="w-full h-full object-contain"
@@ -182,7 +182,7 @@ const OrderDetail = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold line-clamp-1 dark:text-white">
-                    {item.product?.name || item.name}
+                    {item.name}
                   </p>
                   <p className="text-xs text-text-muted dark:text-gray-400">
                     {[item.size && `Size ${item.size}`, item.color].filter(Boolean).join(' · ')} · x{item.quantity}
