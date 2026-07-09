@@ -21,18 +21,26 @@ const BRAND_FALLBACK = {
   umbro:         { displayName: 'Umbro',         brand: 'Umbro',       tagline: 'The Game Lives Here', description: 'Umbro — thương hiệu Anh quốc với lịch sử lâu đời trong bóng đá. Những chiếc áo đấu huyền thoại.', accentColor: '#E30613', modelPhotos: [{ url: 'https://images.unsplash.com/photo-1516478177764-9fe5bd7e9717?w=800&q=80', title: 'Umbro Team Kit', desc: 'Đồng phục thi đấu' }] },
 };
 
-// ── GLB files available in public/models/ ────────────────────────────────────
-const AVAILABLE_MODELS = ['ball.glb', 'boot1.glb', 'boot2.glb', 'boot3.glb'];
-
+// ── Built-in GLB fallback models ─────────────────────────────────────────────
 const MODEL_LABELS = {
   'ball.glb':  'Quả bóng',
   'boot1.glb': 'Giày đá bóng 1',
   'boot2.glb': 'Giày đá bóng 2',
   'boot3.glb': 'Giày đá bóng 3',
 };
+const BUILTIN_MODELS = ['ball.glb', 'boot1.glb', 'boot2.glb', 'boot3.glb'];
 
-// Kick off all GLB downloads when this module is imported
-AVAILABLE_MODELS.forEach(m => useGLTF.preload('/models/' + m));
+// Kick off all built-in GLB downloads when this module is imported
+BUILTIN_MODELS.forEach(m => useGLTF.preload('/models/' + m));
+
+// Resolve the ordered model list for a collection.
+// New data: col.models3d[] = [{url, name, _id}].
+// Legacy data: col.model3d = 'boot1.glb' or full URL.
+const resolveModels = (col) => {
+  if (col.models3d?.length) return col.models3d;
+  const m = col.model3d || 'boot1.glb';
+  return [{ _id: 'legacy', url: m, name: MODEL_LABELS[m] || m }];
+};
 
 // Per-model Y rotation so a nice side-profile faces the camera initially.
 // Camera at [0, 0.5, 3.5] + PI/4 rotation ≈ 45° 3/4 hero-shot view.
@@ -47,8 +55,9 @@ const MODEL_INIT_ROT = {
 // ── Inner model component — Bounds handles camera centering ───────────────
 const ModelMesh = ({ url }) => {
   const { scene } = useGLTF(url);
-  const file = url.replace('/models/', '');
-  const rot  = MODEL_INIT_ROT[file] || [0, 0, 0];
+  // For built-in models use the known initial rotation; for uploaded URLs default to 45°.
+  const filename = url.startsWith('http') ? null : url.replace('/models/', '');
+  const rot      = filename ? (MODEL_INIT_ROT[filename] || [0, 0, 0]) : [0, Math.PI / 4, 0];
   return <primitive object={scene} rotation={rot} />;
 };
 
@@ -65,10 +74,12 @@ const CameraResetter = ({ url }) => {
 };
 
 // ── Orbit carousel role helpers ───────────────────────────────────────────────
-// Indices cycle: center=0, right=1, back=2, left=3 relative to activeIdx
-const getRole = (idx, active) => {
-  const ROLES = ['center', 'right', 'back', 'left'];
-  return ROLES[(idx - active + 4) % 4];
+// Works for any N >= 1. center → right → back(s) → left → center.
+const getRole = (idx, activeIdx, n) => {
+  if (idx === activeIdx)               return 'center';
+  if (idx === (activeIdx + 1) % n)     return 'right';
+  if (n >= 3 && idx === (activeIdx - 1 + n) % n) return 'left';
+  return 'back';
 };
 
 const ROLE_STYLE = {
@@ -78,26 +89,33 @@ const ROLE_STYLE = {
   back:   { transform: 'translateX(0) scale(0.28)',    opacity: 0.12, zIndex: 1,  cursor: 'default', pointerEvents: 'none' },
 };
 
-// ── Side-slot thumbnail — real rendered PNG, dark bg fallback if not yet generated ─
-const ThumbCard = ({ file }) => {
-  const name = file.replace('.glb', '');
+// ── Side-slot thumbnail — PNG preview for built-ins, label for custom URLs ────
+const ModelSideCard = ({ model }) => {
+  // model = { url, name, _id }
+  const isBuiltin = !model.url.startsWith('http');
+  const thumbSrc  = isBuiltin ? '/models/thumbnails/' + model.url.replace('.glb', '') + '.png' : null;
+  const label     = model.name || (isBuiltin ? (MODEL_LABELS[model.url] || model.url) : '3D Model');
+
   return (
-    <div
-      className="w-full h-full rounded-2xl overflow-hidden flex items-center justify-center select-none"
-    >
-      <img
-        src={'/models/thumbnails/' + name + '.png'}
-        alt={MODEL_LABELS[file] || file}
-        draggable={false}
-        className="w-full h-full object-contain"
-        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
-      />
-      <span
-        className="text-white/40 text-[11px] font-bold uppercase tracking-[0.2em] text-center px-6 leading-relaxed"
-        style={{ display: 'none' }}
-      >
-        {MODEL_LABELS[file] || file}
-      </span>
+    <div className="w-full h-full rounded-2xl overflow-hidden flex items-center justify-center select-none">
+      {thumbSrc ? (
+        <>
+          <img
+            src={thumbSrc}
+            alt={label}
+            draggable={false}
+            className="w-full h-full object-contain"
+            onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+          />
+          <span className="text-white/40 text-[11px] font-bold uppercase tracking-[0.2em] text-center px-6 leading-relaxed" style={{ display: 'none' }}>
+            {label}
+          </span>
+        </>
+      ) : (
+        <span className="text-white/40 text-[11px] font-bold uppercase tracking-[0.2em] text-center px-6 leading-relaxed">
+          {label}
+        </span>
+      )}
     </div>
   );
 };
@@ -106,7 +124,8 @@ const ThumbCard = ({ file }) => {
 // One WebGL context total for the collection page; model switches via Bounds key.
 // dpr cap + antialias:false keep GPU load low.
 const LiveCanvas = ({ file, reducedMotion }) => {
-  const url = '/models/' + file;
+  // file may be a built-in filename ('boot1.glb') or a full Cloudinary URL.
+  const url = file.startsWith('http') ? file : '/models/' + file;
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -145,7 +164,8 @@ const LiveCanvas = ({ file, reducedMotion }) => {
 };
 
 // ── Orbit carousel — section 1 of the collection page ─────────────────────────
-const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
+// models = [{url, name, _id}, ...] — may be 1 to N items.
+const Model3DViewer = ({ models, brandName, accentColor }) => {
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' && window.innerWidth < 640
   );
@@ -160,16 +180,18 @@ const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  const initIdx = AVAILABLE_MODELS.indexOf(modelFile);
-  const [activeIdx, setActiveIdx] = useState(initIdx >= 0 ? initIdx : 0);
+  const n          = models.length;
+  const [activeIdx, setActiveIdx] = useState(0);
 
   const select    = (i) => { if (i !== activeIdx) setActiveIdx(i); };
-  const prevModel = () => select((activeIdx - 1 + 4) % 4);
-  const nextModel = () => select((activeIdx + 1) % 4);
+  const prevModel = () => select((activeIdx - 1 + n) % n);
+  const nextModel = () => select((activeIdx + 1) % n);
 
   const stageH = isMobile ? 420 : 560;
   const itemW  = isMobile ? 300 : 500;
   const itemH  = isMobile ? 360 : 520;
+
+  const activeModel = models[activeIdx] || models[0];
 
   return (
     <div
@@ -197,17 +219,17 @@ const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
       />
 
       {/* Orbit items — side thumbnails only; center slot is blank (covered by Canvas) */}
-      {AVAILABLE_MODELS.map((file, i) => {
-        const role   = getRole(i, activeIdx);
+      {models.map((model, i) => {
+        const role   = getRole(i, activeIdx, n);
         const center = role === 'center';
         return (
           <div
-            key={file}
+            key={model._id || i}
             onClick={() => { if (!center) select(i); }}
             onKeyDown={(e) => { if (!center && (e.key === 'Enter' || e.key === ' ')) select(i); }}
             role={center ? undefined : 'button'}
             tabIndex={center ? undefined : 0}
-            aria-label={center ? undefined : (MODEL_LABELS[file] || file)}
+            aria-label={center ? undefined : (model.name || model.url)}
             style={{
               position:   'absolute',
               top:        '50%',
@@ -221,7 +243,7 @@ const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
               ...ROLE_STYLE[role],
             }}
           >
-            {center ? null : <ThumbCard file={file} />}
+            {center ? null : <ModelSideCard model={model} />}
           </div>
         );
       })}
@@ -240,7 +262,7 @@ const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
           zIndex:     11,
         }}
       >
-        <LiveCanvas file={AVAILABLE_MODELS[activeIdx]} reducedMotion={reducedMotion} />
+        <LiveCanvas file={activeModel.url} reducedMotion={reducedMotion} />
       </div>
 
       {/* Brand label + active model name — top left, above orbit */}
@@ -251,43 +273,32 @@ const Model3DViewer = ({ modelFile, brandName, accentColor }) => {
         >
           {brandName} Collection
         </span>
-        <div
-          className="text-white/45 text-[10px] mt-0.5 tracking-wide"
-          data-active-model={AVAILABLE_MODELS[activeIdx]}
-        >
-          {MODEL_LABELS[AVAILABLE_MODELS[activeIdx]] || AVAILABLE_MODELS[activeIdx]}
+        <div className="text-white/45 text-[10px] mt-0.5 tracking-wide">
+          {activeModel.name || MODEL_LABELS[activeModel.url] || activeModel.url}
         </div>
       </div>
 
-      {/* Prev arrow */}
-      <button
-        onClick={prevModel}
-        aria-label="Mô hình trước"
-        className="absolute top-1/2 left-3 md:left-5 flex items-center justify-center rounded-full hover:bg-black/65"
-        style={{
-          transform: 'translateY(-50%)', zIndex: 30,
-          width: 40, height: 40,
-          background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)',
-          color: 'rgba(255,255,255,0.8)', cursor: 'pointer',
-        }}
-      >
-        <ChevronLeft size={20} />
-      </button>
-
-      {/* Next arrow */}
-      <button
-        onClick={nextModel}
-        aria-label="Mô hình tiếp theo"
-        className="absolute top-1/2 right-3 md:right-5 flex items-center justify-center rounded-full hover:bg-black/65"
-        style={{
-          transform: 'translateY(-50%)', zIndex: 30,
-          width: 40, height: 40,
-          background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)',
-          color: 'rgba(255,255,255,0.8)', cursor: 'pointer',
-        }}
-      >
-        <ChevronRight size={20} />
-      </button>
+      {/* Prev / Next arrows — only shown when there are multiple models */}
+      {n > 1 && (
+        <>
+          <button
+            onClick={prevModel}
+            aria-label="Mô hình trước"
+            className="absolute top-1/2 left-3 md:left-5 flex items-center justify-center rounded-full hover:bg-black/65"
+            style={{ transform: 'translateY(-50%)', zIndex: 30, width: 40, height: 40, background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer' }}
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={nextModel}
+            aria-label="Mô hình tiếp theo"
+            className="absolute top-1/2 right-3 md:right-5 flex items-center justify-center rounded-full hover:bg-black/65"
+            style={{ transform: 'translateY(-50%)', zIndex: 30, width: 40, height: 40, background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)', cursor: 'pointer' }}
+          >
+            <ChevronRight size={20} />
+          </button>
+        </>
+      )}
 
       {/* Drag hint */}
       <div
@@ -350,7 +361,7 @@ const CollectionPage = () => {
   const description = col.description || fb.description;
   const accentColor = col.accentColor || fb.accentColor;
   const modelPhotos = (col.modelPhotos && col.modelPhotos.length ? col.modelPhotos : fb.modelPhotos) || [];
-  const model3d     = col.model3d || 'boot1.glb';
+  const models3d    = resolveModels(col);
 
   const { data: productsData, isLoading: prodLoading } = useQuery({
     queryKey: ['collection-products', brand],
@@ -368,7 +379,7 @@ const CollectionPage = () => {
 
       {/* ── Section 1: 3D model viewer ────────────────────────────────────── */}
       <Model3DViewer
-        modelFile={model3d}
+        models={models3d}
         brandName={brand}
         accentColor={accentColor}
       />

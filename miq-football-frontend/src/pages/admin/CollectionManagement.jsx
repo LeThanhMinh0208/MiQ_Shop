@@ -9,10 +9,10 @@ import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getCollections, createCollection, updateCollection, deleteCollection,
-  addSlide, removeSlide, addModelPhoto, removeModelPhoto,
+  uploadGlbModel, addModel3d, removeModel3d, addModelPhoto, removeModelPhoto,
 } from '../../services/collectionService.js';
 
-// ── Cloudinary upload ─────────────────────────────────────────────────────────
+// ── Cloudinary upload helpers ─────────────────────────────────────────────────
 const uploadToCloudinary = async (file) => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const preset    = import.meta.env.VITE_CLOUDINARY_PRESET;
@@ -24,9 +24,22 @@ const uploadToCloudinary = async (file) => {
   return { url: res.data.secure_url, publicId: res.data.public_id };
 };
 
+
+const GLB_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+const validateGlb = (file) => {
+  if (!file.name.toLowerCase().endsWith('.glb')) return 'File phải có đuôi .glb';
+  if (file.size > GLB_MAX_BYTES) return 'Model quá lớn, vui lòng nén model xuống dưới 5MB (dùng gltf-transform) trước khi tải lên.';
+  return null;
+};
+
 const BRAND_OPTIONS  = ['MiQ', 'Nike', 'Adidas', 'Puma', 'New Balance', 'Mizuno', 'Umbro'];
-const MODEL_OPTIONS  = ['boot1.glb', 'boot2.glb', 'boot3.glb', 'ball.glb'];
-const MODEL_LABELS   = { 'boot1.glb': 'Giày đá bóng 1', 'boot2.glb': 'Giày đá bóng 2', 'boot3.glb': 'Giày đá bóng 3', 'ball.glb': 'Quả bóng' };
+const MODEL_BUILT_INS = [
+  { url: 'boot1.glb', name: 'Giày đá bóng 1' },
+  { url: 'boot2.glb', name: 'Giày đá bóng 2' },
+  { url: 'boot3.glb', name: 'Giày đá bóng 3' },
+  { url: 'ball.glb',  name: 'Quả bóng' },
+];
 
 // ── Label + Input helpers ─────────────────────────────────────────────────────
 const FieldLabel = ({ children }) => (
@@ -72,82 +85,118 @@ const DeleteConfirm = ({ name, onClose, onConfirm, loading }) => (
   </motion.div>
 );
 
-// ── Tab: Slides ───────────────────────────────────────────────────────────────
-const SlidesTab = ({ collection }) => {
+// ── Tab: 3D Models ────────────────────────────────────────────────────────────
+const Models3DTab = ({ collection }) => {
   const qc = useQueryClient();
   const [uploading, setUploading] = useState(false);
-  const [caption, setCaption]     = useState('');
+  const [modelName, setModelName] = useState('');
+  const [glbError,  setGlbError]  = useState('');
 
   const addMut = useMutation({
-    mutationFn: ({ url, publicId, caption: c }) => addSlide(collection._id, { url, publicId, caption: c }),
-    onSuccess: () => { qc.invalidateQueries(['collections-admin']); toast.success('Đã thêm slide'); setCaption(''); },
+    mutationFn: (model) => addModel3d(collection._id, model),
+    onSuccess: () => { qc.invalidateQueries(['collections-admin']); toast.success('Đã thêm model 3D'); setModelName(''); },
     onError: (e) => toast.error(e.message),
   });
   const removeMut = useMutation({
-    mutationFn: (slideId) => removeSlide(collection._id, slideId),
-    onSuccess: () => { qc.invalidateQueries(['collections-admin']); toast.success('Đã xóa slide'); },
+    mutationFn: (modelId) => removeModel3d(collection._id, modelId),
+    onSuccess: () => { qc.invalidateQueries(['collections-admin']); toast.success('Đã xóa model 3D'); },
     onError: (e) => toast.error(e.message),
   });
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const err = validateGlb(file);
+    if (err) { setGlbError(err); e.target.value = ''; return; }
+    setGlbError('');
     setUploading(true);
     try {
-      const { url, publicId } = await uploadToCloudinary(file);
-      addMut.mutate({ url, publicId, caption });
-    } catch (err) {
-      toast.error(err.message);
+      const { url, publicId } = await uploadGlbModel(file);
+      addMut.mutate({ url, name: modelName || file.name.replace(/\.glb$/i, ''), publicId });
+    } catch (uploadErr) {
+      setGlbError(uploadErr.message || 'Tải lên thất bại');
     } finally {
       setUploading(false);
       e.target.value = '';
     }
   };
 
-  const slides = collection?.slides || [];
+  const models = collection?.models3d || [];
 
   return (
     <div className="space-y-4">
-      {/* Upload row */}
-      <div className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-surface-border bg-bg-raised">
-        <TextInput
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          placeholder="Caption (tuỳ chọn)..."
-          className="flex-1"
-        />
-        <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm cursor-pointer hover:bg-primary/90 transition flex-shrink-0 disabled:opacity-50">
-          {uploading ? <Loader className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-          {uploading ? 'Đang tải...' : 'Tải lên'}
-          <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
-        </label>
+      {/* Upload section */}
+      <div className="p-4 rounded-xl border border-dashed border-surface-border bg-bg-raised space-y-3">
+        <div className="flex items-center gap-3">
+          <TextInput
+            value={modelName}
+            onChange={(e) => setModelName(e.target.value)}
+            placeholder="Tên model (VD: Nike Phantom Elite)"
+            className="flex-1"
+          />
+          <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold cursor-pointer transition flex-shrink-0 ${
+            uploading
+              ? 'opacity-50 cursor-not-allowed bg-bg-raised border-surface-border text-text-muted'
+              : 'bg-primary/10 border-primary/40 text-primary hover:bg-primary/20'
+          }`}>
+            {uploading ? <Loader className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {uploading ? 'Đang tải...' : 'Tải lên .glb'}
+            <input type="file" accept=".glb" className="hidden" onChange={handleUpload} disabled={uploading} />
+          </label>
+        </div>
+        {glbError && <p className="text-xs text-red-500">{glbError}</p>}
+
+        {/* Quick-add built-ins */}
+        <div>
+          <p className="text-[11px] text-text-muted mb-2 font-semibold uppercase tracking-wider">Hoặc thêm model có sẵn:</p>
+          <div className="flex flex-wrap gap-2">
+            {MODEL_BUILT_INS.map((m) => (
+              <button
+                key={m.url}
+                type="button"
+                onClick={() => addMut.mutate({ url: m.url, name: m.name, publicId: '' })}
+                disabled={addMut.isPending}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold border bg-bg-base border-surface-border text-text-secondary hover:border-primary/50 hover:text-primary transition disabled:opacity-50"
+              >
+                {m.name}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {slides.length === 0 ? (
-        <p className="text-center text-text-muted text-sm py-8">Chưa có slide nào. Tải lên ảnh slideshow đầu tiên.</p>
+      {/* Model list */}
+      {models.length === 0 ? (
+        <p className="text-center text-text-muted text-sm py-8">
+          Chưa có model 3D nào. Tải lên file .glb hoặc chọn model có sẵn ở trên.
+        </p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {slides.map((slide) => (
-            <div key={slide._id} className="relative group rounded-xl overflow-hidden border border-surface-border">
-              <img src={slide.url} alt={slide.caption} className="w-full aspect-video object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <button
-                  onClick={() => removeMut.mutate(slide._id)}
-                  disabled={removeMut.isPending}
-                  className="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+        <div className="space-y-2">
+          {models.map((m, i) => (
+            <div key={m._id} className="flex items-center gap-3 p-3 rounded-xl border border-surface-border bg-bg-raised">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-[11px] font-black text-primary">
+                {i + 1}
               </div>
-              {slide.caption && (
-                <div className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-black/60 text-white text-xs truncate">
-                  {slide.caption}
-                </div>
-              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-text-primary">{m.name || `Model ${i + 1}`}</p>
+                <p className="text-[10px] text-text-muted font-mono truncate">{m.url}</p>
+              </div>
+              <button
+                onClick={() => removeMut.mutate(m._id)}
+                disabled={removeMut.isPending}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:bg-red-500/10 hover:text-red-500 transition flex-shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
       )}
+
+      <p className="text-[11px] text-text-muted">
+        Các model này sẽ hiển thị trong carousel 3D trên trang bộ sưu tập.
+        Thứ tự trong danh sách = thứ tự trong carousel.
+      </p>
     </div>
   );
 };
@@ -284,39 +333,21 @@ const InfoTab = ({ form, setForm }) => (
       />
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <FieldLabel>Màu nhấn (hex)</FieldLabel>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={form.accentColor}
-            onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
-            className="w-11 h-11 rounded-xl border border-surface-border cursor-pointer bg-transparent p-1"
-          />
-          <TextInput
-            value={form.accentColor}
-            onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
-            placeholder="#E8590C"
-            className="flex-1"
-          />
-        </div>
-      </div>
-      <div>
-        <FieldLabel>Mô hình 3D</FieldLabel>
-        <div className="relative">
-          <select
-            value={form.model3d}
-            onChange={(e) => setForm((f) => ({ ...f, model3d: e.target.value }))}
-            className="w-full appearance-none px-4 py-2.5 rounded-xl border border-surface-border bg-bg-raised text-text-primary focus:border-primary focus:outline-none text-sm pr-9"
-          >
-            {MODEL_OPTIONS.map((m) => (
-              <option key={m} value={m}>{MODEL_LABELS[m] || m}</option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
-        </div>
-        <p className="text-[10px] text-text-muted mt-1">Model hiển thị ở đầu trang bộ sưu tập</p>
+    <div>
+      <FieldLabel>Màu nhấn (hex)</FieldLabel>
+      <div className="flex items-center gap-3">
+        <input
+          type="color"
+          value={form.accentColor}
+          onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
+          className="w-11 h-11 rounded-xl border border-surface-border cursor-pointer bg-transparent p-1"
+        />
+        <TextInput
+          value={form.accentColor}
+          onChange={(e) => setForm((f) => ({ ...f, accentColor: e.target.value }))}
+          placeholder="#E8590C"
+          className="flex-1"
+        />
       </div>
     </div>
   </div>
@@ -328,12 +359,11 @@ const CollectionModal = ({ mode, collection, onClose }) => {
   const isEdit = mode === 'edit';
   const [tab, setTab]   = useState('info');
   const [form, setForm] = useState({
-    name:        collection && collection.name        ? collection.name        : '',
-    brand:       collection && collection.brand       ? collection.brand       : '',
-    tagline:     collection && collection.tagline     ? collection.tagline     : '',
-    description: collection && collection.description ? collection.description : '',
-    accentColor: collection && collection.accentColor ? collection.accentColor : '#E8590C',
-    model3d:     collection && collection.model3d     ? collection.model3d     : 'boot1.glb',
+    name:        collection?.name        || '',
+    brand:       collection?.brand       || '',
+    tagline:     collection?.tagline     || '',
+    description: collection?.description || '',
+    accentColor: collection?.accentColor || '#E8590C',
   });
   const [saving, setSaving] = useState(false);
 
@@ -365,9 +395,9 @@ const CollectionModal = ({ mode, collection, onClose }) => {
 
   const TABS = isEdit
     ? [
-        { id: 'info',   label: 'Thông tin' },
-        { id: 'slides', label: `Slideshow (${liveCollection?.slides?.length || 0})` },
-        { id: 'photos', label: `Ảnh model (${liveCollection?.modelPhotos?.length || 0})` },
+        { id: 'info',     label: 'Thông tin' },
+        { id: 'models3d', label: `Mô hình 3D (${liveCollection?.models3d?.length || 0})` },
+        { id: 'photos',   label: `Ảnh model (${liveCollection?.modelPhotos?.length || 0})` },
       ]
     : [{ id: 'info', label: 'Thông tin' }];
 
@@ -417,9 +447,9 @@ const CollectionModal = ({ mode, collection, onClose }) => {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6">
-          {tab === 'info' && <InfoTab form={form} setForm={setForm} />}
-          {tab === 'slides' && isEdit && <SlidesTab collection={liveCollection} />}
-          {tab === 'photos' && isEdit && <ModelPhotosTab collection={liveCollection} />}
+          {tab === 'info'     && <InfoTab form={form} setForm={setForm} />}
+          {tab === 'models3d' && isEdit && <Models3DTab collection={liveCollection} />}
+          {tab === 'photos'   && isEdit && <ModelPhotosTab collection={liveCollection} />}
         </div>
 
         {/* Footer — only for info tab */}
@@ -501,7 +531,6 @@ const CollectionManagement = () => {
               <tr className="bg-bg-raised border-b border-surface-border text-text-muted text-xs uppercase tracking-wider">
                 <th className="px-4 py-3 text-left">Bộ sưu tập</th>
                 <th className="px-4 py-3 text-left">Slug</th>
-                <th className="px-4 py-3 text-center">Slides</th>
                 <th className="px-4 py-3 text-center">Ảnh model</th>
                 <th className="px-4 py-3 text-left">Trạng thái</th>
                 <th className="px-4 py-3 text-right">Hành động</th>
@@ -510,13 +539,13 @@ const CollectionManagement = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-text-muted">
+                  <td colSpan={5} className="px-4 py-12 text-center text-text-muted">
                     <Loader className="w-6 h-6 animate-spin mx-auto mb-2" />Đang tải...
                   </td>
                 </tr>
               ) : collections.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center text-text-muted">
+                  <td colSpan={5} className="px-4 py-16 text-center text-text-muted">
                     <Layers3 className="w-12 h-12 mx-auto mb-3 opacity-20" />
                     <p className="font-semibold mb-1">Chưa có bộ sưu tập nào</p>
                     <p className="text-xs">Nhấn "Thêm bộ sưu tập" để bắt đầu.</p>
@@ -527,8 +556,8 @@ const CollectionManagement = () => {
                   <tr key={col._id} className="border-b border-surface-border hover:bg-bg-raised/40 transition">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {col.slides?.[0]?.url ? (
-                          <img src={col.slides[0].url} alt="" className="w-12 h-9 rounded-lg object-cover flex-shrink-0" />
+                        {col.modelPhotos?.[0]?.url ? (
+                          <img src={col.modelPhotos[0].url} alt="" className="w-12 h-9 rounded-lg object-cover flex-shrink-0" />
                         ) : (
                           <div className="w-12 h-9 rounded-lg bg-bg-raised flex items-center justify-center flex-shrink-0">
                             <Image className="w-4 h-4 text-text-muted" />
@@ -550,9 +579,6 @@ const CollectionManagement = () => {
                       <code className="text-xs bg-bg-raised border border-surface-border px-2 py-1 rounded text-text-muted">
                         {col.slug}
                       </code>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-sm font-semibold text-text-primary">{col.slides?.length || 0}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="text-sm font-semibold text-text-primary">{col.modelPhotos?.length || 0}</span>

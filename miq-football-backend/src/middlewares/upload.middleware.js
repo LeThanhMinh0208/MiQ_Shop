@@ -103,6 +103,42 @@ export const createUploader = (folderName, transformations = []) => {
     };
 };
 
+// ── GLB signed upload (resource_type: raw) ───────────────────────────────────
+// Unsigned Cloudinary presets block raw resource type, so .glb files must be
+// uploaded server-side using the API secret (signed upload via SDK).
+
+const glbFilter = (req, file, cb) => {
+    if (!file.originalname.toLowerCase().endsWith('.glb')) {
+        return cb(new ApiError(400, 'File phải có đuôi .glb'), false);
+    }
+    cb(null, true);
+};
+
+const multerGlb = multer({
+    storage: memStorage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: glbFilter,
+});
+
+export const glbUploadMiddleware = (req, res, next) => {
+    multerGlb.single('file')(req, res, (err) => {
+        if (err?.name === 'MulterError' && err.code === 'LIMIT_FILE_SIZE') {
+            return next(new ApiError(400, 'Model quá lớn, vui lòng nén xuống dưới 5MB'));
+        }
+        next(err);
+    });
+};
+
+export async function uploadGlbBuffer(buffer) {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder: 'miq-football/models3d', resource_type: 'raw' },
+            (err, result) => (err ? reject(err) : resolve(result)),
+        );
+        Readable.from(buffer).pipe(stream);
+    });
+}
+
 // ── Named uploaders ───────────────────────────────────────────────────────────
 export const uploadProductImages = createUploader('products', [
     { width: 800, height: 800, crop: 'limit' },

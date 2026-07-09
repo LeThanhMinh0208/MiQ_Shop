@@ -2,6 +2,7 @@ import slugify from 'slugify';
 import Collection from '../models/Collection.js';
 import catchAsync from '../utils/catchAsync.js';
 import { ApiResponse, ApiError } from '../utils/apiResponse.js';
+import { uploadGlbBuffer } from '../middlewares/upload.middleware.js';
 
 // GET /api/v1/collections
 export const getCollections = catchAsync(async (req, res) => {
@@ -50,6 +51,37 @@ export const deleteCollection = catchAsync(async (req, res) => {
   const collection = await Collection.findByIdAndDelete(req.params.id);
   if (!collection) throw new ApiError(404, 'Không tìm thấy bộ sưu tập');
   res.json(new ApiResponse(200, null, 'Đã xóa bộ sưu tập'));
+});
+
+// POST /api/v1/collections/:id/models3d  (admin)
+export const addModel3d = catchAsync(async (req, res) => {
+  const { url, name, publicId } = req.body;
+  if (!url) throw new ApiError(400, 'URL model là bắt buộc');
+  const collection = await Collection.findByIdAndUpdate(
+    req.params.id,
+    { $push: { models3d: { url, name: name || '', publicId: publicId || '' } } },
+    { new: true },
+  );
+  if (!collection) throw new ApiError(404, 'Không tìm thấy bộ sưu tập');
+  res.json(new ApiResponse(200, collection, 'Đã thêm model 3D'));
+});
+
+// DELETE /api/v1/collections/:id/models3d/:modelId  (admin)
+export const removeModel3d = catchAsync(async (req, res) => {
+  const collection = await Collection.findByIdAndUpdate(
+    req.params.id,
+    { $pull: { models3d: { _id: req.params.modelId } } },
+    { new: true },
+  );
+  if (!collection) throw new ApiError(404, 'Không tìm thấy bộ sưu tập');
+  res.json(new ApiResponse(200, collection, 'Đã xóa model 3D'));
+});
+
+// POST /api/v1/collections/upload-model  (admin) — signed GLB upload via SDK
+export const uploadModel3d = catchAsync(async (req, res) => {
+  if (!req.file) throw new ApiError(400, 'Không có file .glb nào được gửi lên');
+  const result = await uploadGlbBuffer(req.file.buffer);
+  res.json(new ApiResponse(200, { url: result.secure_url, publicId: result.public_id }, 'Đã tải lên model 3D'));
 });
 
 // POST /api/v1/collections/:id/slides  (admin)

@@ -25,6 +25,23 @@ export const deleteCollection = async (id) => {
   return data.data;
 };
 
+export const uploadGlbModel = async (file) => {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await api.post('/collections/upload-model', form);
+  return data.data; // { url, publicId }
+};
+
+export const addModel3d = async (id, model) => {
+  const { data } = await api.post(`/collections/${id}/models3d`, model);
+  return data.data;
+};
+
+export const removeModel3d = async (id, modelId) => {
+  const { data } = await api.delete(`/collections/${id}/models3d/${modelId}`);
+  return data.data;
+};
+
 export const addSlide = async (id, slide) => {
   const { data } = await api.post(`/collections/${id}/slides`, slide);
   return data.data;

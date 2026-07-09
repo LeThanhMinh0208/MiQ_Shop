@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     strictPort: true,
+    host: true,
   },
   optimizeDeps: {
     include: ['react-window', 'socket.io-client'],
