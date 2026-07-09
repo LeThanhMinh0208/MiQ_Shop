@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tag,
   LogOut, ChevronLeft, ChevronRight, MessageCircle,
-  Newspaper, PlayCircle, ImagePlay, Layers, Home, Layers3, FileText, RefreshCw, Printer,
+  Newspaper, PlayCircle, ImagePlay, Layers, Home, Layers3, FileText, RefreshCw, Printer, Ticket,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore.js';
 import { useThemeStore } from '../../store/themeStore.js';
@@ -24,6 +24,7 @@ const links = [
   { to: '/admin/quotes',       icon: FileText,        label: 'Báo giá' },
   { to: '/admin/trade-ins',    icon: RefreshCw,       label: 'Thu cũ đổi mới' },
   { to: '/admin/print-orders', icon: Printer,         label: 'Đặt in theo đội' },
+  { to: '/admin/vouchers',     icon: Ticket,          label: 'Mã giảm giá' },
   { to: '/admin/site-assets',  icon: Layers,          label: 'Hình ảnh' },
   { to: '/admin/chat',         icon: MessageCircle,   label: 'Chat' },
 ];
